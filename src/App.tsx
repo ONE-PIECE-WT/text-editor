@@ -1,5 +1,5 @@
 import Editor from '@monaco-editor/react';
-import { FaFolder, FaFile, FaChevronRight, FaChevronDown } from 'react-icons/fa';
+import { FaFolder, FaFile, FaChevronRight, FaChevronDown, FaCog } from 'react-icons/fa';
 import { useEditorStore } from './store/editorStore';
 import type { FileNode } from './store/editorStore';
 import './App.css';
@@ -57,13 +57,21 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* 左侧工具栏 */}
+      <div className="sidebar left-sidebar">
+        <div 
+          className={`sidebar-icon ${!leftPanelCollapsed ? 'active' : ''}`} 
+          onClick={toggleLeftPanel} 
+          title="文件浏览器"
+        >
+          <FaFolder />
+        </div>
+      </div>
+
       {/* 左侧面板 - 文件树 */}
       <div className={`left-panel ${leftPanelCollapsed ? 'collapsed' : ''}`}>
         <div className="panel-header">
           <h3>文件浏览器</h3>
-          <button onClick={toggleLeftPanel}>
-            {leftPanelCollapsed ? '展开' : '折叠'}
-          </button>
         </div>
         <div className="panel-content">
           {renderFileTree(fileTree)}
@@ -103,9 +111,6 @@ function App() {
       <div className={`right-panel ${rightPanelCollapsed ? 'collapsed' : ''}`}>
         <div className="panel-header">
           <h3>扩展面板</h3>
-          <button onClick={toggleRightPanel}>
-            {rightPanelCollapsed ? '展开' : '折叠'}
-          </button>
         </div>
         <div className="panel-content">
           <div className="extension-item">
@@ -116,6 +121,17 @@ function App() {
             <h4>文件监听</h4>
             <p>实时监控文件变化</p>
           </div>
+        </div>
+      </div>
+      
+      {/* 右侧工具栏 */}
+      <div className="sidebar right-sidebar">
+        <div 
+          className={`sidebar-icon ${!rightPanelCollapsed ? 'active' : ''}`} 
+          onClick={toggleRightPanel} 
+          title="扩展面板"
+        >
+          <FaCog />
         </div>
       </div>
     </div>
