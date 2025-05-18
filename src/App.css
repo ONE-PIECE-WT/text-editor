@@ -60,15 +60,30 @@ body, html, #root {
   background-color: #505050;
 }
 
+/* CSS变量定义面板宽度 */
+:root {
+  --left-panel-width: 250px;
+  --right-panel-width: 250px;
+  --min-panel-width: 180px;
+  --max-panel-width: 400px;
+}
+
 /* 面板通用样式 */
 .left-panel, .right-panel {
-  width: 250px;
   height: 100%;
   background-color: #252526;
   border-right: 1px solid #3c3c3c;
-  transition: width 0.3s ease;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.left-panel {
+  width: var(--left-panel-width);
+}
+
+.right-panel {
+  width: var(--right-panel-width);
 }
 
 .right-panel {
@@ -76,6 +91,29 @@ body, html, #root {
   border-left: 1px solid #3c3c3c;
   margin-left: 0;
   margin-right: 48px;
+}
+
+/* 拖拽调整器样式 */
+.panel-resizer {
+  width: 8px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  background-color: rgba(60, 60, 60, 0.5);
+  cursor: col-resize;
+  z-index: 100;
+}
+
+.panel-resizer:hover {
+  background-color: rgba(100, 100, 100, 0.7);
+}
+
+.left-panel .panel-resizer {
+  right: 0;
+}
+
+.right-panel .panel-resizer {
+  left: 0;
 }
 
 .panel-header {
@@ -108,8 +146,12 @@ body, html, #root {
 }
 
 /* 折叠面板样式 */
+.left-panel, .right-panel {
+  transition: none;
+}
+
 .left-panel.collapsed, .right-panel.collapsed {
-  width: 0;
+  width: 0 !important;
   overflow: hidden;
   margin: 0;
 }

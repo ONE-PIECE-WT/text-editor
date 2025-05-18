@@ -1,4 +1,5 @@
 import Editor from '@monaco-editor/react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaFolder, FaFile, FaChevronRight, FaChevronDown, FaCog } from 'react-icons/fa';
 import { useEditorStore } from './store/editorStore';
 import type { FileNode } from './store/editorStore';
@@ -16,6 +17,76 @@ function App() {
     toggleRightPanel,
     toggleFolder
   } = useEditorStore();
+  
+  // 面板拖拽状态
+  const [isLeftResizing, setIsLeftResizing] = useState(false);
+  const [isRightResizing, setIsRightResizing] = useState(false);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(250);
+  const [rightPanelWidth, setRightPanelWidth] = useState(250);
+  
+  // 使用useRef存储最新状态，避免循环依赖
+  const isLeftResizingRef = React.useRef(false);
+  const isRightResizingRef = React.useRef(false);
+  
+  // 设置CSS变量
+  useEffect(() => {
+    document.documentElement.style.setProperty('--left-panel-width', `${leftPanelWidth}px`);
+    document.documentElement.style.setProperty('--right-panel-width', `${rightPanelWidth}px`);
+  }, [leftPanelWidth, rightPanelWidth]);
+
+  // 拖拽左侧面板
+  const handleLeftResize = useCallback((e: MouseEvent) => {
+    if (isLeftResizingRef.current) {
+      const newWidth = Math.max(180, Math.min(400, e.clientX));
+      setLeftPanelWidth(newWidth);
+      e.preventDefault();
+    }
+  }, []);
+
+  // 停止拖拽左侧面板
+  const stopLeftResize = useCallback(() => {
+    setIsLeftResizing(false);
+    isLeftResizingRef.current = false;
+    document.removeEventListener('mousemove', handleLeftResize);
+    document.removeEventListener('mouseup', stopLeftResize);
+  }, []);
+  
+  // 开始拖拽左侧面板
+  const startLeftResize = (e: React.MouseEvent) => {
+    setIsLeftResizing(true);
+    isLeftResizingRef.current = true;
+    document.addEventListener('mousemove', handleLeftResize);
+    document.addEventListener('mouseup', stopLeftResize);
+    e.preventDefault();
+  };
+
+  // 拖拽右侧面板
+  const handleRightResize = useCallback((e: MouseEvent) => {
+    if (isRightResizingRef.current) {
+      const windowWidth = window.innerWidth;
+      const newWidth = windowWidth - e.clientX - 48; // 减去右侧工具栏宽度
+      const clampedWidth = Math.max(180, Math.min(400, newWidth));
+      setRightPanelWidth(clampedWidth);
+      e.preventDefault();
+    }
+  }, []);
+
+  // 停止拖拽右侧面板
+  const stopRightResize = useCallback(() => {
+    setIsRightResizing(false);
+    isRightResizingRef.current = false;
+    document.removeEventListener('mousemove', handleRightResize);
+    document.removeEventListener('mouseup', stopRightResize);
+  }, []);
+  
+  // 开始拖拽右侧面板
+  const startRightResize = (e: React.MouseEvent) => {
+    setIsRightResizing(true);
+    isRightResizingRef.current = true;
+    document.addEventListener('mousemove', handleRightResize);
+    document.addEventListener('mouseup', stopRightResize);
+    e.preventDefault();
+  };
 
   // 处理文件/文件夹点击
   const handleNodeClick = (node: FileNode) => {
@@ -76,6 +147,7 @@ function App() {
         <div className="panel-content">
           {renderFileTree(fileTree)}
         </div>
+        {!leftPanelCollapsed && <div className="panel-resizer" onMouseDown={startLeftResize}></div>}
       </div>
 
       {/* 中间面板 - 编辑器 */}
@@ -122,6 +194,7 @@ function App() {
             <p>实时监控文件变化</p>
           </div>
         </div>
+        {!rightPanelCollapsed && <div className="panel-resizer" onMouseDown={startRightResize}></div>}
       </div>
       
       {/* 右侧工具栏 */}
