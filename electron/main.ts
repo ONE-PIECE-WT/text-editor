@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import { createMenu } from './menu'
 
 // 禁用硬件加速以减少某些系统上的问题
 // app.disableHardwareAcceleration()
@@ -64,9 +65,14 @@ ipcMain.handle('get-files', async (_, dirPath) => {
   }
 });
 
+// 菜单已抽离到单独的文件中
+
 // 当Electron完成初始化并准备创建浏览器窗口时调用此方法
 app.whenReady().then(() => {
   createWindow()
+  
+  // 隐藏原生菜单栏并设置自定义菜单
+  Menu.setApplicationMenu(createMenu())
 
   // 在macOS上，当点击dock图标并且没有其他窗口打开时，
   // 通常在应用程序中重新创建一个窗口。
