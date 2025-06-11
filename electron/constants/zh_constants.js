@@ -2,6 +2,7 @@ const ZHTextContainer = {
     file: "文件",
     new: "新建",
     open: "打开",
+    openFolder: "打开文件夹",
     save: "保存",
     exit: "退出",
     edit: "编辑",

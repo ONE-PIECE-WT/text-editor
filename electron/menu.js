@@ -1,5 +1,5 @@
 // 导入 electron 中的 Menu
-import { Menu, app } from 'electron';
+import { Menu, app, BrowserWindow } from 'electron';
 
 // 默认使用中文，可以根据需要切换语言
 import ZHTextContainer from './constants/zh_constants';
@@ -27,6 +27,18 @@ const createMenuTemplate = () => {
           click: () => {
             console.log('打开文件');
             // 这里添加打开文件的逻辑
+          }
+        },
+        {
+          label: TextContainer.openFolder,
+          accelerator: 'CmdOrCtrl+Shift+O',
+          click: () => {
+            console.log('打开文件夹');
+            // 获取当前窗口并发送打开文件夹的消息
+            const mainWindow = BrowserWindow.getFocusedWindow();
+            if (mainWindow) {
+              mainWindow.webContents.send('open-folder');
+            }
           }
         },
         { type: 'separator' },

@@ -48,6 +48,12 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+  
+  // 当窗口加载完成后，自动打开指定文件夹
+  mainWindow.webContents.on('did-finish-load', () => {
+    // 发送选择的文件夹路径给渲染进程
+    mainWindow?.webContents.send('selected-folder', 'D:\\临时备用文件')
+  })
 }
 
 // 实现文件系统API
@@ -62,6 +68,44 @@ ipcMain.handle('get-files', async (_, dirPath) => {
   } catch (error) {
     console.error('Error reading directory:', error);
     return [];
+  }
+});
+
+// 导入对话框模块
+import { dialog } from 'electron';
+
+// 处理打开文件夹的IPC消息
+ipcMain.on('open-folder-dialog', async (event) => {
+  if (mainWindow) {
+    try {
+      console.log('打开文件夹对话框');
+      const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openDirectory'],
+        title: '选择要打开的文件夹',
+        buttonLabel: '打开文件夹'
+      });
+      
+      if (!result.canceled && result.filePaths.length > 0) {
+        const selectedPath = result.filePaths[0];
+        console.log('用户选择的文件夹路径:', selectedPath);
+        
+        // 检查路径是否存在
+        try {
+          await fs.promises.access(selectedPath, fs.constants.R_OK);
+          // 发送选择的文件夹路径给渲染进程
+          event.reply('selected-folder', selectedPath);
+        } catch (error) {
+          console.error('无法访问选择的文件夹:', error);
+          // 可以在这里添加错误处理，例如显示错误对话框
+        }
+      } else {
+        console.log('用户取消了文件夹选择');
+      }
+    } catch (error) {
+      console.error('打开文件夹对话框时出错:', error);
+    }
+  } else {
+    console.error('主窗口不存在，无法打开文件夹对话框');
   }
 });
 

@@ -2,6 +2,7 @@ const ENTextContainer = {
     file: "File",
     new: "New",
     open: "Open",
+    openFolder: "Open Folder",
     save: "Save",
     exit: "Exit",
     edit: "Edit",

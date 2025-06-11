@@ -5,6 +5,7 @@ export interface FileNode {
   id: string;
   name: string;
   type: 'file' | 'folder';
+  path?: string;  // 文件或文件夹的完整路径
   children?: FileNode[];
   content?: string;
   expanded?: boolean;

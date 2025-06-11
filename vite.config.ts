@@ -40,6 +40,10 @@ export default defineConfig({
             },
             rollupOptions: {
               external: Object.keys('dependencies' in require('./package.json') ? require('./package.json').dependencies : {}),
+              output: {
+                format: 'cjs',
+                entryFileNames: '[name].js',
+              },
             },
           },
         },
