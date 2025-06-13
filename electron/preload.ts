@@ -5,6 +5,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld('electronAPI', {
   // 文件系统操作
   getFiles: (dirPath) => ipcRenderer.invoke('get-files', dirPath),
+  getFileContent: (filePath) => ipcRenderer.invoke('get-file-content', filePath),
   
   // 打开文件夹对话框
   onOpenFolder: (callback) => {

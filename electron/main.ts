@@ -71,6 +71,17 @@ ipcMain.handle('get-files', async (_, dirPath) => {
   }
 });
 
+// 读取文件内容
+ipcMain.handle('get-file-content', async (_, filePath) => {
+  try {
+    const content = await fs.promises.readFile(filePath, 'utf-8');
+    return content;
+  } catch (error) {
+    console.error('Error reading file:', error);
+    throw error;
+  }
+});
+
 // 导入对话框模块
 import { dialog } from 'electron';
 

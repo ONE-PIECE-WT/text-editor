@@ -168,6 +168,15 @@ ipcMain.handle("get-files", async (_, dirPath) => {
     return [];
   }
 });
+ipcMain.handle("get-file-content", async (_, filePath) => {
+  try {
+    const content = await fs.promises.readFile(filePath, "utf-8");
+    return content;
+  } catch (error) {
+    console.error("Error reading file:", error);
+    throw error;
+  }
+});
 ipcMain.on("open-folder-dialog", async (event) => {
   if (mainWindow) {
     try {

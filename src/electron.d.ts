@@ -4,6 +4,7 @@ interface ElectronAPI {
     isDirectory: boolean;
     path: string;
   }>>;
+  getFileContent: (filePath: string) => Promise<string>;
   onOpenFolder: (callback: () => void) => import('electron').IpcRenderer;
   openFolderDialog: () => void;
   onSelectedFolder: (callback: (folderPath: string) => void) => import('electron').IpcRenderer;

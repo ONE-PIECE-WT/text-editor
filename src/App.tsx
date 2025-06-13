@@ -196,7 +196,20 @@ function App() {
         }
       }
     } else {
-      setSelectedFile(node);
+      // 点击文件时，获取文件内容
+      if (window.electronAPI && node.path) {
+        try {
+          const content = await window.electronAPI.getFileContent(node.path);
+          const fileWithContent = { ...node, content };
+          setSelectedFile(fileWithContent);
+        } catch (error) {
+          console.error(`读取文件 ${node.path} 内容失败:`, error);
+          // 即使读取失败，也设置文件节点，但没有内容
+          setSelectedFile(node);
+        }
+      } else {
+        setSelectedFile(node);
+      }
     }
   };
 
