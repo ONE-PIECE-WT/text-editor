@@ -84,9 +84,6 @@ body, html, #root {
 
 .right-panel {
   width: var(--right-panel-width);
-}
-
-.right-panel {
   border-right: none;
   border-left: 1px solid #3c3c3c;
   margin-left: 0;
@@ -150,10 +147,17 @@ body, html, #root {
   transition: none;
 }
 
-.left-panel.collapsed, .right-panel.collapsed {
+.left-panel.collapsed {
   width: 0 !important;
   overflow: hidden;
   margin: 0;
+}
+
+.right-panel.collapsed {
+  width: 0 !important;
+  overflow: hidden;
+  margin-left: 0;
+  margin-right: 48px;
 }
 
 .left-panel.collapsed .panel-content, 
@@ -170,6 +174,24 @@ body, html, #root {
   display: flex;
   flex-direction: column;
   background-color: #1e1e1e;
+  transition: all 0.3s ease;
+  width: calc(100% - var(--left-panel-width) - var(--right-panel-width) - 96px);
+}
+
+/* 当左侧面板折叠时调整中间面板宽度 */
+.left-panel.collapsed ~ .center-panel {
+  width: calc(100% - var(--right-panel-width) - 96px);
+}
+
+/* 当右侧面板折叠时调整中间面板宽度 */
+.center-panel ~ .right-panel.collapsed {
+  width: 0 !important;
+}
+
+/* 当两侧面板都折叠时调整中间面板宽度 */
+.left-panel.collapsed ~ .center-panel ~ .right-panel.collapsed,
+.left-panel.collapsed ~ .right-panel.collapsed ~ .center-panel {
+  width: calc(100% - 96px);
 }
 
 .editor-header {
