@@ -1,4 +1,5 @@
-import Editor from '@monaco-editor/react';
+import CodeMirrorEditor from './components/CodeMirrorEditor';
+import CSGRenderer from './components/CSGRenderer';
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaFolder, FaFile, FaChevronRight, FaChevronDown, FaCog } from 'react-icons/fa';
 import { useEditorStore } from './store/editorStore';
@@ -17,6 +18,52 @@ function App() {
     toggleRightPanel,
     toggleFolder
   } = useEditorStore();
+  
+  // 根据文件扩展名获取语言类型
+  const getFileLanguage = (fileName: string): string => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'ts':
+      case 'tsx':
+        return 'typescript';
+      case 'js':
+      case 'jsx':
+        return 'javascript';
+      case 'css':
+        return 'css';
+      case 'html':
+        return 'html';
+      case 'json':
+        return 'json';
+      case 'md':
+        return 'markdown';
+      case 'csg':
+        return 'csg'; // 自定义文件类型
+      default:
+        return 'javascript';
+    }
+  };
+
+  // CSG文件预览模式状态
+  const [csgPreviewMode, setCsgPreviewMode] = useState(false);
+  
+  // 处理文件路径自动补全
+  const handleFilePathComplete = async (partialPath: string): Promise<string[]> => {
+    try {
+      // 如果是相对路径，基于当前打开的文件夹
+      const currentFolder = fileTree[0]?.path || '';
+      const targetPath = partialPath.startsWith('/') || partialPath.includes(':') 
+        ? partialPath 
+        : `${currentFolder}/${partialPath}`;
+      
+      // 获取目标路径下的文件列表
+      const files = await window.electronAPI.getFiles(targetPath);
+      return files.map(file => file.name);
+    } catch (error) {
+      console.error('获取文件路径补全失败:', error);
+      return [];
+    }
+  };
   
   // 监听打开文件夹事件
   useEffect(() => {
@@ -103,11 +150,14 @@ function App() {
   // 拖拽左侧面板
   const handleLeftResize = useCallback((e: MouseEvent) => {
     if (isLeftResizingRef.current) {
-      const newWidth = Math.max(180, Math.min(400, e.clientX));
+      const windowWidth = window.innerWidth;
+      const rightPanelCurrentWidth = rightPanelCollapsed ? 0 : rightPanelWidth;
+      const maxAllowedWidth = windowWidth - rightPanelCurrentWidth - 96 - 300; // 保留300px给中间面板
+      const newWidth = Math.max(180, Math.min(maxAllowedWidth, e.clientX));
       setLeftPanelWidth(newWidth);
       e.preventDefault();
     }
-  }, []);
+  }, [rightPanelWidth, rightPanelCollapsed]);
 
   // 停止拖拽左侧面板
   const stopLeftResize = useCallback(() => {
@@ -115,7 +165,7 @@ function App() {
     isLeftResizingRef.current = false;
     document.removeEventListener('mousemove', handleLeftResize);
     document.removeEventListener('mouseup', stopLeftResize);
-  }, []);
+  }, [handleLeftResize]);
   
   // 开始拖拽左侧面板
   const startLeftResize = (e: React.MouseEvent) => {
@@ -130,12 +180,14 @@ function App() {
   const handleRightResize = useCallback((e: MouseEvent) => {
     if (isRightResizingRef.current) {
       const windowWidth = window.innerWidth;
+      const leftPanelCurrentWidth = leftPanelCollapsed ? 0 : leftPanelWidth;
+      const maxAllowedWidth = windowWidth - leftPanelCurrentWidth - 96 - 300; // 保留300px给中间面板
       const newWidth = windowWidth - e.clientX - 48; // 减去右侧工具栏宽度
-      const clampedWidth = Math.max(180, Math.min(400, newWidth));
+      const clampedWidth = Math.max(180, Math.min(Math.min(400, maxAllowedWidth), newWidth));
       setRightPanelWidth(clampedWidth);
       e.preventDefault();
     }
-  }, []);
+  }, [leftPanelWidth, leftPanelCollapsed]);
 
   // 停止拖拽右侧面板
   const stopRightResize = useCallback(() => {
@@ -143,7 +195,7 @@ function App() {
     isRightResizingRef.current = false;
     document.removeEventListener('mousemove', handleRightResize);
     document.removeEventListener('mouseup', stopRightResize);
-  }, []);
+  }, [handleRightResize]);
   
   // 开始拖拽右侧面板
   const startRightResize = (e: React.MouseEvent) => {
@@ -243,7 +295,7 @@ function App() {
   };
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${(isLeftResizing || isRightResizing) ? 'resizing' : ''}`}>
       {/* 左侧工具栏 */}
       <div className="sidebar left-sidebar">
         <div 
@@ -274,18 +326,63 @@ function App() {
               <span>{selectedFile.name}</span>
             </div>
             <div className="editor-container">
-              <Editor
-                height="100%"
-                defaultLanguage={selectedFile.name.endsWith('.tsx') || selectedFile.name.endsWith('.ts') ? 'typescript' : 'javascript'}
-                defaultValue={selectedFile.content || ''}
-                theme="vs-dark"
-                options={{
-                  minimap: { enabled: true },
-                  fontSize: 14,
-                  wordWrap: 'on',
-                  automaticLayout: true,
-                }}
-              />
+              {getFileLanguage(selectedFile.name) === 'csg' && (
+                <div style={{ 
+                  padding: '8px 16px', 
+                  backgroundColor: '#2d2d2d', 
+                  borderBottom: '1px solid #3c3c3c',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <span style={{ color: '#e0e0e0', fontSize: '14px' }}>CSG文件:</span>
+                  <button
+                    onClick={() => setCsgPreviewMode(false)}
+                    style={{
+                      padding: '4px 12px',
+                      backgroundColor: !csgPreviewMode ? '#007acc' : '#3c3c3c',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    编辑模式
+                  </button>
+                  <button
+                    onClick={() => setCsgPreviewMode(true)}
+                    style={{
+                      padding: '4px 12px',
+                      backgroundColor: csgPreviewMode ? '#007acc' : '#3c3c3c',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    预览模式
+                  </button>
+                </div>
+              )}
+              
+              {getFileLanguage(selectedFile.name) === 'csg' && csgPreviewMode ? (
+                <CSGRenderer 
+                  content={selectedFile.content || ''}
+                  basePath={fileTree[0]?.path || ''}
+                />
+              ) : (
+                <CodeMirrorEditor
+                  value={selectedFile.content || ''}
+                  language={getFileLanguage(selectedFile.name)}
+                  onChange={(value) => {
+                    // 可以在这里添加文件内容变更处理
+                    console.log('文件内容已变更:', value);
+                  }}
+                  onFilePathComplete={handleFilePathComplete}
+                />
+              )}
             </div>
           </>
         ) : (

@@ -32,14 +32,8 @@ export default defineConfig({
             outDir: 'dist-electron',
             minify: false,
             sourcemap: 'inline',
-            // 将preload.js构建为CommonJS格式
-            lib: {
-              entry: 'electron/preload.ts',
-              formats: ['cjs'],
-              fileName: () => 'preload.js'
-            },
             rollupOptions: {
-              external: Object.keys('dependencies' in require('./package.json') ? require('./package.json').dependencies : {}),
+              external: ['electron'],
               output: {
                 format: 'cjs',
                 entryFileNames: '[name].js',

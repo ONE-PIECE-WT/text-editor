@@ -76,6 +76,7 @@ body, html, #root {
   display: flex;
   flex-direction: column;
   position: relative;
+  flex-shrink: 0;
 }
 
 .left-panel {
@@ -99,10 +100,30 @@ body, html, #root {
   background-color: rgba(60, 60, 60, 0.5);
   cursor: col-resize;
   z-index: 100;
+  user-select: none;
+  transition: background-color 0.2s ease;
 }
 
 .panel-resizer:hover {
   background-color: rgba(100, 100, 100, 0.7);
+}
+
+.panel-resizer:active {
+  background-color: rgba(120, 120, 120, 0.9);
+}
+
+/* 防止拖拽时选中文本 */
+.app-container.resizing {
+  user-select: none;
+  cursor: col-resize;
+}
+
+.app-container.resizing * {
+  pointer-events: none;
+}
+
+.app-container.resizing .panel-resizer {
+  pointer-events: auto;
 }
 
 .left-panel .panel-resizer {
@@ -174,24 +195,8 @@ body, html, #root {
   display: flex;
   flex-direction: column;
   background-color: #1e1e1e;
-  transition: all 0.3s ease;
-  width: calc(100% - var(--left-panel-width) - var(--right-panel-width) - 96px);
-}
-
-/* 当左侧面板折叠时调整中间面板宽度 */
-.left-panel.collapsed ~ .center-panel {
-  width: calc(100% - var(--right-panel-width) - 96px);
-}
-
-/* 当右侧面板折叠时调整中间面板宽度 */
-.center-panel ~ .right-panel.collapsed {
-  width: 0 !important;
-}
-
-/* 当两侧面板都折叠时调整中间面板宽度 */
-.left-panel.collapsed ~ .center-panel ~ .right-panel.collapsed,
-.left-panel.collapsed ~ .right-panel.collapsed ~ .center-panel {
-  width: calc(100% - 96px);
+  min-width: 200px;
+  overflow: hidden;
 }
 
 .editor-header {
