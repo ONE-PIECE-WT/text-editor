@@ -11,9 +11,14 @@ function App() {
   const { 
     fileTree, 
     selectedFile, 
+    openTabs,
+    activeTabIndex,
     leftPanelCollapsed, 
     rightPanelCollapsed,
     setSelectedFile,
+    openFile,
+    closeTab,
+    setActiveTab,
     toggleLeftPanel,
     toggleRightPanel,
     toggleFolder
@@ -260,19 +265,19 @@ function App() {
         }
       }
     } else {
-      // 点击文件时，获取文件内容
+      // 点击文件时，获取文件内容并打开标签页
       if (window.electronAPI && node.path) {
         try {
           const content = await window.electronAPI.getFileContent(node.path);
           const fileWithContent = { ...node, content };
-          setSelectedFile(fileWithContent);
+          openFile(fileWithContent);
         } catch (error) {
           console.error(`读取文件 ${node.path} 内容失败:`, error);
-          // 即使读取失败，也设置文件节点，但没有内容
-          setSelectedFile(node);
+          // 即使读取失败，也打开文件节点，但没有内容
+          openFile(node);
         }
       } else {
-        setSelectedFile(node);
+        openFile(node);
       }
     }
   };
@@ -332,10 +337,29 @@ function App() {
 
       {/* 中间面板 - 编辑器 */}
       <div className="center-panel">
-        {selectedFile ? (
+        {openTabs.length > 0 ? (
           <>
             <div className="editor-header">
-              <span>{selectedFile.name}</span>
+              <div className="tabs-container">
+                {openTabs.map((tab, index) => (
+                  <div 
+                    key={tab.id}
+                    className={`tab ${index === activeTabIndex ? 'active' : ''}`}
+                    onClick={() => setActiveTab(index)}
+                  >
+                    <span className="tab-name">{tab.name}</span>
+                    <button 
+                      className="tab-close"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeTab(index);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="editor-container">
               {getFileLanguage(selectedFile.name) === 'csg' && (
@@ -399,7 +423,7 @@ function App() {
           </>
         ) : (
           <div className="empty-editor">
-            <p>请从左侧文件树中选择一个文件</p>
+            <p>请从左侧文件树中打开一个文件</p>
           </div>
         )}
       </div>

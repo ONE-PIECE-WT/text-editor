@@ -17,6 +17,10 @@ interface EditorState {
   fileTree: FileNode[];
   // 当前选中的文件
   selectedFile: FileNode | null;
+  // 打开的文件标签页列表
+  openTabs: FileNode[];
+  // 当前活动的标签页索引
+  activeTabIndex: number;
   // 面板状态
   leftPanelCollapsed: boolean;
   rightPanelCollapsed: boolean;
@@ -24,6 +28,9 @@ interface EditorState {
   // 操作方法
   setFileTree: (fileTree: FileNode[]) => void;
   setSelectedFile: (file: FileNode | null) => void;
+  openFile: (file: FileNode) => void;
+  closeTab: (index: number) => void;
+  setActiveTab: (index: number) => void;
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
   toggleFolder: (node: FileNode) => void;
@@ -64,6 +71,8 @@ export const useEditorStore = create<EditorState>((set) => ({
     }
   ],
   selectedFile: null,
+  openTabs: [],
+  activeTabIndex: -1,
   leftPanelCollapsed: false,
   rightPanelCollapsed: false,
   
@@ -72,6 +81,62 @@ export const useEditorStore = create<EditorState>((set) => ({
   
   // 设置选中文件
   setSelectedFile: (selectedFile) => set({ selectedFile }),
+  
+  // 打开文件（添加到标签页）
+  openFile: (file) => set((state) => {
+    // 检查文件是否已经在标签页中
+    const existingIndex = state.openTabs.findIndex(tab => tab.id === file.id);
+    
+    if (existingIndex !== -1) {
+      // 如果文件已经打开，切换到该标签页
+      return {
+        activeTabIndex: existingIndex,
+        selectedFile: state.openTabs[existingIndex]
+      };
+    } else {
+      // 如果文件未打开，添加新标签页
+      const newTabs = [...state.openTabs, file];
+      return {
+        openTabs: newTabs,
+        activeTabIndex: newTabs.length - 1,
+        selectedFile: file
+      };
+    }
+  }),
+  
+  // 关闭标签页
+  closeTab: (index) => set((state) => {
+    const newTabs = state.openTabs.filter((_, i) => i !== index);
+    let newActiveIndex = state.activeTabIndex;
+    let newSelectedFile = state.selectedFile;
+    
+    if (newTabs.length === 0) {
+      // 如果没有标签页了
+      newActiveIndex = -1;
+      newSelectedFile = null;
+    } else if (index === state.activeTabIndex) {
+      // 如果关闭的是当前活动标签页
+      if (index >= newTabs.length) {
+        newActiveIndex = newTabs.length - 1;
+      }
+      newSelectedFile = newTabs[newActiveIndex];
+    } else if (index < state.activeTabIndex) {
+      // 如果关闭的标签页在当前活动标签页之前
+      newActiveIndex = state.activeTabIndex - 1;
+    }
+    
+    return {
+      openTabs: newTabs,
+      activeTabIndex: newActiveIndex,
+      selectedFile: newSelectedFile
+    };
+  }),
+  
+  // 设置活动标签页
+  setActiveTab: (index) => set((state) => ({
+    activeTabIndex: index,
+    selectedFile: state.openTabs[index] || null
+  })),
   
   // 切换左侧面板
   toggleLeftPanel: () => set((state) => ({ leftPanelCollapsed: !state.leftPanelCollapsed })),
