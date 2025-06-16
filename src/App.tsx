@@ -141,6 +141,9 @@ function App() {
   const isLeftResizingRef = React.useRef(false);
   const isRightResizingRef = React.useRef(false);
   
+  // 拖拽起始状态
+  const dragStartRef = React.useRef({ startX: 0, startWidth: 0 });
+  
   // 设置CSS变量
   useEffect(() => {
     document.documentElement.style.setProperty('--left-panel-width', `${leftPanelWidth}px`);
@@ -150,10 +153,11 @@ function App() {
   // 拖拽左侧面板
   const handleLeftResize = useCallback((e: MouseEvent) => {
     if (isLeftResizingRef.current) {
+      const deltaX = e.clientX - dragStartRef.current.startX;
       const windowWidth = window.innerWidth;
       const rightPanelCurrentWidth = rightPanelCollapsed ? 0 : rightPanelWidth;
       const maxAllowedWidth = windowWidth - rightPanelCurrentWidth - 96 - 300; // 保留300px给中间面板
-      const newWidth = Math.max(180, Math.min(maxAllowedWidth, e.clientX));
+      const newWidth = Math.max(180, Math.min(maxAllowedWidth, dragStartRef.current.startWidth + deltaX));
       setLeftPanelWidth(newWidth);
       e.preventDefault();
     }
@@ -169,6 +173,10 @@ function App() {
   
   // 开始拖拽左侧面板
   const startLeftResize = (e: React.MouseEvent) => {
+    dragStartRef.current = {
+      startX: e.clientX,
+      startWidth: leftPanelWidth
+    };
     setIsLeftResizing(true);
     isLeftResizingRef.current = true;
     document.addEventListener('mousemove', handleLeftResize);
@@ -179,12 +187,12 @@ function App() {
   // 拖拽右侧面板
   const handleRightResize = useCallback((e: MouseEvent) => {
     if (isRightResizingRef.current) {
+      const deltaX = dragStartRef.current.startX - e.clientX; // 右侧面板向左拖拽时deltaX为正
       const windowWidth = window.innerWidth;
       const leftPanelCurrentWidth = leftPanelCollapsed ? 0 : leftPanelWidth;
       const maxAllowedWidth = windowWidth - leftPanelCurrentWidth - 96 - 300; // 保留300px给中间面板
-      const newWidth = windowWidth - e.clientX - 48; // 减去右侧工具栏宽度
-      const clampedWidth = Math.max(180, Math.min(Math.min(400, maxAllowedWidth), newWidth));
-      setRightPanelWidth(clampedWidth);
+      const newWidth = Math.max(180, Math.min(Math.min(400, maxAllowedWidth), dragStartRef.current.startWidth + deltaX));
+      setRightPanelWidth(newWidth);
       e.preventDefault();
     }
   }, [leftPanelWidth, leftPanelCollapsed]);
@@ -199,6 +207,10 @@ function App() {
   
   // 开始拖拽右侧面板
   const startRightResize = (e: React.MouseEvent) => {
+    dragStartRef.current = {
+      startX: e.clientX,
+      startWidth: rightPanelWidth
+    };
     setIsRightResizing(true);
     isRightResizingRef.current = true;
     document.addEventListener('mousemove', handleRightResize);
