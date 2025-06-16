@@ -252,61 +252,14 @@ body, html, #root {
   overflow-x: auto;
   overflow-y: hidden;
   position: relative;
-  /* 自定义滚动条样式 - 悬浮且默认隐藏 */
-  scrollbar-width: none; /* Firefox - 完全隐藏 */
+  /* 隐藏滚动条但保持滚动功能 */
+  scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
 }
 
-/* 为Firefox创建自定义悬浮滚动条 */
-.tabs-container::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.tabs-container:hover::after {
-  opacity: 1;
-}
-
-/* WebKit 浏览器的滚动条样式 - 真正悬浮 */
+/* 隐藏WebKit滚动条 */
 .tabs-container::-webkit-scrollbar {
-  height: 4px;
-  background: transparent;
-  position: absolute;
-}
-
-.tabs-container::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 0;
-}
-
-.tabs-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  position: absolute;
-  bottom: 0;
-}
-
-/* 悬停时显示滚动条 */
-.tabs-container:hover::-webkit-scrollbar-thumb {
-  opacity: 1;
-}
-
-/* 滚动条悬停效果 */
-.tabs-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
-  opacity: 1;
+  display: none;
 }
 
 /* 单个标签页 */
