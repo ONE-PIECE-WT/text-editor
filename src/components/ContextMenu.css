@@ -1,0 +1,169 @@
+/* 右键菜单样式 */
+.context-menu {
+  position: fixed;
+  background: #2d2d2d;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 4px 0;
+  min-width: 200px;
+  z-index: 1000;
+  font-size: 13px;
+  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  user-select: none;
+  animation: contextMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.context-menu-section {
+  padding: 2px 0;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.context-menu-item:hover {
+  background-color: #3c3c3c;
+}
+
+.context-menu-item:active {
+  background-color: #4a4a4a;
+}
+
+.context-menu-item-danger {
+  color: #ff6b6b;
+}
+
+.context-menu-item-danger:hover {
+  background-color: #4a2c2c;
+  color: #ff8a8a;
+}
+
+.context-menu-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 10px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.context-menu-item:hover .context-menu-icon {
+  opacity: 1;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: #3c3c3c;
+  margin: 4px 8px;
+}
+
+/* 禁用状态 */
+.context-menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 快捷键显示 */
+.context-menu-shortcut {
+  margin-left: auto;
+  font-size: 11px;
+  opacity: 0.6;
+  padding-left: 20px;
+}
+
+/* 子菜单箭头 */
+.context-menu-arrow {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.context-menu-item-submenu:hover .context-menu-arrow {
+  opacity: 1;
+}
+
+/* 子菜单样式 */
+.context-submenu {
+  position: fixed;
+  background: #2d2d2d;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 4px 0;
+  min-width: 180px;
+  z-index: 1001;
+  font-size: 13px;
+  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  user-select: none;
+  animation: contextMenuFadeIn 0.15s ease-out;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .context-menu {
+    min-width: 180px;
+    font-size: 14px;
+  }
+  
+  .context-menu-item {
+    padding: 10px 12px;
+  }
+  
+  .context-menu-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+  }
+}
+
+/* 深色主题优化 */
+@media (prefers-color-scheme: dark) {
+  .context-menu {
+    background: #1e1e1e;
+    border-color: #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  
+  .context-menu-item:hover {
+    background-color: #333;
+  }
+  
+  .context-menu-divider {
+    background-color: #333;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .context-menu {
+    border-width: 2px;
+  }
+  
+  .context-menu-item {
+    border: 1px solid transparent;
+  }
+  
+  .context-menu-item:hover {
+    border-color: #007acc;
+  }
+}

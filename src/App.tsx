@@ -7,6 +7,9 @@ import type { FileNode } from './store/editorStore';
 import { useStateSync } from './services/stateSync';
 import { useWindowState } from './hooks/useWindowState';
 import SettingsPanel from './components/SettingsPanel';
+import ContextMenu from './components/ContextMenu';
+import FileNameDialog from './components/FileNameDialog';
+import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import './App.css';
 
 function App() {
@@ -64,7 +67,26 @@ function App() {
   // 设置面板状态
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
-
+  // 右键菜单状态
+  const [contextMenu, setContextMenu] = useState({
+    isVisible: false,
+    x: 0,
+    y: 0,
+    targetNode: null as FileNode | null
+  });
+  
+  // 文件名输入弹窗状态
+  const [fileNameDialog, setFileNameDialog] = useState({
+    isVisible: false,
+    fileType: '',
+    parentNode: null as FileNode | null
+  });
+  
+  // 删除确认弹窗状态
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState({
+    isVisible: false,
+    targetNode: null as FileNode | null
+  });
   
   // 处理文件路径自动补全
   const handleFilePathComplete = async (partialPath: string): Promise<string[]> => {
@@ -313,6 +335,259 @@ function App() {
     }
   };
 
+  // 处理右键菜单
+  const handleContextMenu = (e: React.MouseEvent, node: FileNode) => {
+    e.preventDefault();
+    setContextMenu({
+      isVisible: true,
+      x: e.clientX,
+      y: e.clientY,
+      targetNode: node
+    });
+  };
+
+  // 关闭右键菜单
+  const closeContextMenu = () => {
+    setContextMenu({
+      isVisible: false,
+      x: 0,
+      y: 0,
+      targetNode: null
+    });
+  };
+
+  // 右键菜单操作处理函数
+  const handleNewFile = (parentNode?: FileNode, fileType?: string) => {
+    console.log('新建文件', parentNode, fileType);
+    if (fileType) {
+      setFileNameDialog({
+        isVisible: true,
+        fileType,
+        parentNode
+      });
+    }
+  };
+  
+  // 处理文件名确认
+  const handleFileNameConfirm = async (fileName: string) => {
+    const { parentNode, fileType } = fileNameDialog;
+    
+    console.log('新建文件', fileName, fileType);
+    
+    try {
+      // 如果文件名不包含扩展名，自动添加
+      let finalFileName = fileName;
+      if (!fileName.includes('.')) {
+        finalFileName = `${fileName}.${fileType}`;
+      }
+      
+      // 确定文件创建路径
+      let targetPath = '';
+      if (parentNode && parentNode.type === 'folder' && parentNode.path) {
+        targetPath = `${parentNode.path}/${finalFileName}`;
+      } else if (fileTree[0]?.path) {
+        // 如果没有指定父节点，在根目录创建
+        targetPath = `${fileTree[0].path}/${finalFileName}`;
+      } else {
+        console.error('无法确定文件创建路径');
+        return;
+      }
+      
+      // 调用Electron API创建文件
+        if (window.electronAPI) {
+          await window.electronAPI.createFile(targetPath, '');
+          console.log('文件创建成功:', targetPath);
+          
+          // 刷新文件树 - 重新加载父文件夹内容
+          const parentPath = parentNode ? parentNode.path : fileTree[0]?.path;
+          if (parentPath) {
+            try {
+              const files = await window.electronAPI.getFiles(parentPath);
+              
+              if (parentNode) {
+                // 如果有父节点，更新该节点的子内容
+                const children = files.map((file, index) => ({
+                  id: `${parentNode.id}-child-${index}`,
+                  name: file.name,
+                  type: file.isDirectory ? 'folder' as const : 'file' as const,
+                  path: file.path,
+                  expanded: false,
+                }));
+                
+                const updateNodeChildren = (nodes: FileNode[]): FileNode[] => {
+                  return nodes.map(n => {
+                    if (n.id === parentNode.id) {
+                      return { ...n, children, expanded: true };
+                    }
+                    if (n.children) {
+                      return { ...n, children: updateNodeChildren(n.children) };
+                    }
+                    return n;
+                  });
+                };
+                
+                const currentFileTree = useEditorStore.getState().fileTree;
+                useEditorStore.getState().setFileTree(updateNodeChildren(currentFileTree));
+              } else {
+                // 如果没有父节点，刷新根目录
+                const fileTree = [{
+                  id: 'root',
+                  name: parentPath.split('\\').pop() || '根目录',
+                  type: 'folder' as const,
+                  path: parentPath,
+                  expanded: true,
+                  children: files.map((file, index) => ({
+                    id: `file-${index}`,
+                    name: file.name,
+                    type: file.isDirectory ? 'folder' as const : 'file' as const,
+                    path: file.path,
+                    expanded: false,
+                  }))
+                }];
+                useEditorStore.getState().setFileTree(fileTree);
+              }
+              
+              console.log('文件树已刷新');
+            } catch (error) {
+              console.error('刷新文件树失败:', error);
+            }
+          }
+        }
+    } catch (error) {
+      console.error('创建文件失败:', error);
+    } finally {
+      setFileNameDialog({
+        isVisible: false,
+        fileType: '',
+        parentNode: null
+      });
+    }
+  };
+  
+  // 处理文件名取消
+  const handleFileNameCancel = () => {
+    setFileNameDialog({
+      isVisible: false,
+      fileType: '',
+      parentNode: null
+    });
+  };
+
+  const handleNewFolder = (parentNode?: FileNode) => {
+    console.log('新建文件夹', parentNode);
+    // TODO: 实现新建文件夹功能
+  };
+
+  const handleShowInExplorer = (node: FileNode) => {
+    console.log('在文件资源管理器中显示', node);
+    if (node.path && window.electronAPI) {
+      window.electronAPI.showInExplorer(node.path);
+    }
+  };
+
+  const handleCut = (node: FileNode) => {
+    console.log('剪切', node);
+    // TODO: 实现剪切功能
+  };
+
+  const handleCopy = (node: FileNode) => {
+    console.log('复制', node);
+    // TODO: 实现复制功能
+  };
+
+  const handleCopyPath = (node: FileNode) => {
+    console.log('复制路径', node);
+    if (node.path && navigator.clipboard) {
+      navigator.clipboard.writeText(node.path);
+    }
+  };
+
+  const handleCopyRelativePath = (node: FileNode) => {
+    console.log('复制相对路径', node);
+    if (node.path && navigator.clipboard) {
+      // 获取相对于项目根目录的路径
+      const rootPath = fileTree[0]?.path || '';
+      const relativePath = node.path.replace(rootPath, '').replace(/^[\\/]/, '');
+      navigator.clipboard.writeText(relativePath);
+    }
+  };
+
+  const handleRename = (node: FileNode) => {
+    console.log('重命名', node);
+    // TODO: 实现重命名功能
+  };
+
+  const handleDelete = (node: FileNode) => {
+    setDeleteConfirmDialog({
+      isVisible: true,
+      targetNode: node
+    });
+  };
+  
+  // 确认删除
+  const handleDeleteConfirm = async () => {
+    const { targetNode } = deleteConfirmDialog;
+    if (!targetNode || !window.electronAPI) {
+      return;
+    }
+    
+    try {
+      await window.electronAPI.deleteFile(targetNode.path);
+      console.log('删除成功:', targetNode.path);
+      
+      // 刷新文件树
+      const rootPath = fileTree[0]?.path;
+      if (rootPath) {
+        try {
+          const files = await window.electronAPI.getFiles(rootPath);
+          const newFileTree = [{
+            id: 'root',
+            name: rootPath.split('\\').pop() || '根目录',
+            type: 'folder' as const,
+            path: rootPath,
+            expanded: true,
+            children: files.map((file, index) => ({
+              id: `file-${index}`,
+              name: file.name,
+              type: file.isDirectory ? 'folder' as const : 'file' as const,
+              path: file.path,
+              expanded: false,
+            }))
+          }];
+          useEditorStore.getState().setFileTree(newFileTree);
+          console.log('文件树已刷新');
+        } catch (error) {
+          console.error('刷新文件树失败:', error);
+        }
+      }
+      
+      // 如果删除的是当前打开的文件，关闭对应的标签页
+      if (targetNode.type === 'file') {
+        const openTabIndex = openTabs.findIndex(tab => tab.path === targetNode.path);
+        if (openTabIndex !== -1) {
+          closeTab(openTabIndex);
+        }
+      }
+      
+    } catch (error) {
+      console.error('删除失败:', error);
+      // 这里可以添加错误提示
+    } finally {
+      setDeleteConfirmDialog({
+        isVisible: false,
+        targetNode: null
+      });
+    }
+  };
+  
+  // 取消删除
+  const handleDeleteCancel = () => {
+    setDeleteConfirmDialog({
+      isVisible: false,
+      targetNode: null
+    });
+  };
+
   // 递归渲染文件树
   const renderFileTree = (nodes: FileNode[]) => {
     return (
@@ -322,6 +597,7 @@ function App() {
             <div 
               className={`file-tree-item-content ${selectedFile?.id === node.id ? 'selected' : ''}`}
               onClick={() => handleNodeClick(node)}
+              onContextMenu={(e) => handleContextMenu(e, node)}
             >
               {node.type === 'folder' ? (
                 <>
@@ -499,6 +775,40 @@ function App() {
       <SettingsPanel 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
+      />
+      
+      {/* 右键菜单 */}
+      <ContextMenu
+        isVisible={contextMenu.isVisible}
+        x={contextMenu.x}
+        y={contextMenu.y}
+        targetNode={contextMenu.targetNode}
+        onClose={closeContextMenu}
+        onNewFile={handleNewFile}
+        onNewFolder={handleNewFolder}
+        onShowInExplorer={handleShowInExplorer}
+        onCut={handleCut}
+        onCopy={handleCopy}
+        onCopyPath={handleCopyPath}
+        onCopyRelativePath={handleCopyRelativePath}
+        onRename={handleRename}
+        onDelete={handleDelete}
+      />
+      
+      {/* 文件名输入弹窗 */}
+      <FileNameDialog
+        isVisible={fileNameDialog.isVisible}
+        fileType={fileNameDialog.fileType}
+        onConfirm={handleFileNameConfirm}
+        onCancel={handleFileNameCancel}
+      />
+      
+      {/* 删除确认弹窗 */}
+      <DeleteConfirmDialog
+        isVisible={deleteConfirmDialog.isVisible}
+        targetNode={deleteConfirmDialog.targetNode}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
       />
     </div>
   )

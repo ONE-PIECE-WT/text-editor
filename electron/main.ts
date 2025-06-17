@@ -82,8 +82,8 @@ ipcMain.handle('get-file-content', async (_, filePath) => {
   }
 });
 
-// 导入对话框模块
-import { dialog } from 'electron';
+// 导入对话框和shell模块
+import { dialog, shell } from 'electron';
 
 // 处理打开文件夹的IPC消息
 ipcMain.on('open-folder-dialog', async (event) => {
@@ -117,6 +117,47 @@ ipcMain.on('open-folder-dialog', async (event) => {
     }
   } else {
     console.error('主窗口不存在，无法打开文件夹对话框');
+  }
+});
+
+// 创建文件
+ipcMain.handle('create-file', async (_, filePath, content) => {
+  try {
+    await fs.promises.writeFile(filePath, content, 'utf-8');
+    console.log('文件创建成功:', filePath);
+  } catch (error) {
+    console.error('创建文件失败:', error);
+    throw error;
+  }
+});
+
+// 删除文件或文件夹
+ipcMain.handle('delete-file', async (_, filePath) => {
+  try {
+    const stats = await fs.promises.stat(filePath);
+    if (stats.isDirectory()) {
+      // 删除文件夹及其所有内容
+      await fs.promises.rmdir(filePath, { recursive: true });
+      console.log('文件夹删除成功:', filePath);
+    } else {
+      // 删除文件
+      await fs.promises.unlink(filePath);
+      console.log('文件删除成功:', filePath);
+    }
+  } catch (error) {
+    console.error('删除失败:', error);
+    throw error;
+  }
+});
+
+// 在文件资源管理器中显示文件
+ipcMain.handle('show-in-explorer', async (_, filePath) => {
+  try {
+    shell.showItemInFolder(filePath);
+    console.log('在资源管理器中显示:', filePath);
+  } catch (error) {
+    console.error('显示文件失败:', error);
+    throw error;
   }
 });
 

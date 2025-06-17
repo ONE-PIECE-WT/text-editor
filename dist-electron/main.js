@@ -1,4 +1,4 @@
-import { Menu, BrowserWindow, app, ipcMain, dialog } from "electron";
+import { Menu, BrowserWindow, app, ipcMain, shell, dialog } from "electron";
 import path, { dirname } from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -203,6 +203,39 @@ ipcMain.on("open-folder-dialog", async (event) => {
     }
   } else {
     console.error("主窗口不存在，无法打开文件夹对话框");
+  }
+});
+ipcMain.handle("create-file", async (_, filePath, content) => {
+  try {
+    await fs.promises.writeFile(filePath, content, "utf-8");
+    console.log("文件创建成功:", filePath);
+  } catch (error) {
+    console.error("创建文件失败:", error);
+    throw error;
+  }
+});
+ipcMain.handle("delete-file", async (_, filePath) => {
+  try {
+    const stats = await fs.promises.stat(filePath);
+    if (stats.isDirectory()) {
+      await fs.promises.rmdir(filePath, { recursive: true });
+      console.log("文件夹删除成功:", filePath);
+    } else {
+      await fs.promises.unlink(filePath);
+      console.log("文件删除成功:", filePath);
+    }
+  } catch (error) {
+    console.error("删除失败:", error);
+    throw error;
+  }
+});
+ipcMain.handle("show-in-explorer", async (_, filePath) => {
+  try {
+    shell.showItemInFolder(filePath);
+    console.log("在资源管理器中显示:", filePath);
+  } catch (error) {
+    console.error("显示文件失败:", error);
+    throw error;
   }
 });
 app.whenReady().then(() => {

@@ -22,5 +22,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return ipcRenderer.on('selected-folder', (_event, folderPath) => callback(folderPath));
   },
   
+  // 文件操作
+  createFile: (filePath, content) => ipcRenderer.invoke('create-file', filePath, content),
+  deleteFile: (filePath) => ipcRenderer.invoke('delete-file', filePath),
+  showInExplorer: (filePath) => ipcRenderer.invoke('show-in-explorer', filePath),
+  
   // 可以在这里添加更多的API
 });
