@@ -1,9 +1,12 @@
 import CodeMirrorEditor from './components/CodeMirrorEditor';
 import CSGRenderer from './components/CSGRenderer';
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaFolder, FaFile, FaChevronRight, FaChevronDown, FaCog } from 'react-icons/fa';
+import { FaFolder, FaFile, FaChevronRight, FaChevronDown, FaCog, FaWrench } from 'react-icons/fa';
 import { useEditorStore } from './store/editorStore';
 import type { FileNode } from './store/editorStore';
+import { useStateSync } from './services/stateSync';
+import { useWindowState } from './hooks/useWindowState';
+import SettingsPanel from './components/SettingsPanel';
 import './App.css';
 
 function App() {
@@ -23,6 +26,12 @@ function App() {
     toggleRightPanel,
     toggleFolder
   } = useEditorStore();
+  
+  // 状态同步服务
+  const stateSync = useStateSync();
+  
+  // 窗口状态管理
+  const { restoreWindowState } = useWindowState();
   
   // 根据文件扩展名获取语言类型
   const getFileLanguage = (fileName: string): string => {
@@ -51,6 +60,9 @@ function App() {
 
   // CSG文件预览模式状态
   const [csgPreviewMode, setCsgPreviewMode] = useState(false);
+  
+  // 设置面板状态
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
 
   
@@ -117,6 +129,9 @@ function App() {
         // 更新文件树状态
         useEditorStore.getState().setFileTree(fileTree);
         
+        // 保存工作区路径到持久化存储
+        stateSync.saveWorkspacePath(folderPath);
+        
         // 显示成功消息
         console.log(`成功加载文件夹: ${folderPath}`);
       } catch (error) {
@@ -141,8 +156,16 @@ function App() {
   // 面板拖拽状态
   const [isLeftResizing, setIsLeftResizing] = useState(false);
   const [isRightResizing, setIsRightResizing] = useState(false);
-  const [leftPanelWidth, setLeftPanelWidth] = useState(250);
-  const [rightPanelWidth, setRightPanelWidth] = useState(250);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(() => {
+    // 从持久化存储恢复左侧面板宽度
+    const settings = stateSync.getEditorSettings();
+    return settings?.leftPanelWidth || 250;
+  });
+  const [rightPanelWidth, setRightPanelWidth] = useState(() => {
+    // 从持久化存储恢复右侧面板宽度
+    const settings = stateSync.getEditorSettings();
+    return settings?.rightPanelWidth || 250;
+  });
   
   // 使用useRef存储最新状态，避免循环依赖
   const isLeftResizingRef = React.useRef(false);
@@ -176,7 +199,10 @@ function App() {
     isLeftResizingRef.current = false;
     document.removeEventListener('mousemove', handleLeftResize);
     document.removeEventListener('mouseup', stopLeftResize);
-  }, [handleLeftResize]);
+    
+    // 保存面板宽度到持久化存储
+    stateSync.updateEditorSettings({ leftPanelWidth });
+  }, [handleLeftResize, leftPanelWidth, stateSync]);
   
   // 开始拖拽左侧面板
   const startLeftResize = (e: React.MouseEvent) => {
@@ -210,7 +236,10 @@ function App() {
     isRightResizingRef.current = false;
     document.removeEventListener('mousemove', handleRightResize);
     document.removeEventListener('mouseup', stopRightResize);
-  }, [handleRightResize]);
+    
+    // 保存面板宽度到持久化存储
+    stateSync.updateEditorSettings({ rightPanelWidth });
+  }, [handleRightResize, rightPanelWidth, stateSync]);
   
   // 开始拖拽右侧面板
   const startRightResize = (e: React.MouseEvent) => {
@@ -457,7 +486,20 @@ function App() {
         >
           <FaCog />
         </div>
+        <div 
+          className="sidebar-icon" 
+          onClick={() => setIsSettingsOpen(true)} 
+          title="设置"
+        >
+          <FaWrench />
+        </div>
       </div>
+      
+      {/* 设置面板 */}
+      <SettingsPanel 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
     </div>
   )
 }
