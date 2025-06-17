@@ -393,7 +393,7 @@ function App() {
               </div>
             </div>
             <div className="editor-container">
-              {getFileLanguage(selectedFile.name) === 'csg' && (
+              {selectedFile && getFileLanguage(selectedFile.name) === 'csg' && (
                 <div style={{ 
                   padding: '8px 16px', 
                   backgroundColor: '#2d2d2d', 
@@ -434,15 +434,15 @@ function App() {
                 </div>
               )}
               
-              {getFileLanguage(selectedFile.name) === 'csg' && csgPreviewMode ? (
+              {selectedFile && getFileLanguage(selectedFile.name) === 'csg' && csgPreviewMode ? (
                 <CSGRenderer 
-                  content={selectedFile.content || ''}
+                  content={selectedFile?.content || ''}
                   basePath={fileTree[0]?.path || ''}
                 />
               ) : (
                 <CodeMirrorEditor
-                  value={selectedFile.content || ''}
-                  language={getFileLanguage(selectedFile.name)}
+                  value={selectedFile?.content || ''}
+                  language={selectedFile ? getFileLanguage(selectedFile.name) : 'javascript'}
                   onChange={(value) => {
                     // 可以在这里添加文件内容变更处理
                     console.log('文件内容已变更:', value);

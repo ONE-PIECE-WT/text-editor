@@ -50,7 +50,7 @@ class StateSyncService {
     
     // 恢复打开的标签页
     if (persistedState.openTabs.length > 0) {
-      const restoredTabs: FileNode[] = persistedState.openTabs.map(tab => ({
+      const restoredTabs: FileNode[] = persistedState.openTabs.map((tab: any) => ({
         id: tab.id,
         name: tab.name,
         type: tab.type,

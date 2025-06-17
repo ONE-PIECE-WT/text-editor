@@ -17,6 +17,8 @@ interface PersistState {
     path?: string;
     content?: string;
     type: 'file' | 'folder';
+    children?: FileNode[];
+    expanded?: boolean;
   }[];
   
   // 当前活动标签页索引

@@ -13,19 +13,20 @@ const CSGRenderer: React.FC<CSGRendererProps> = ({ content, basePath = '' }) => 
   const renderElement = (element: CSGElement, index: number) => {
     switch (element.type) {
       case 'heading':
-        const HeadingTag = `h${Math.min(element.level || 1, 6)}` as keyof JSX.IntrinsicElements;
-        return (
-          <HeadingTag 
-            key={index} 
-            style={{ 
-              color: '#e0e0e0', 
-              marginTop: '20px', 
+        const level = Math.min(element.level || 1, 6);
+        const HeadingTag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+        return React.createElement(
+          HeadingTag,
+          {
+            key: index,
+            style: {
+              color: '#e0e0e0',
+              marginTop: '20px',
               marginBottom: '10px',
-              fontSize: `${2.5 - (element.level || 1) * 0.3}em`
-            }}
-          >
-            {element.content}
-          </HeadingTag>
+              fontSize: `${2.5 - level * 0.3}em`
+            }
+          },
+          element.content
         );
         
       case 'image':
