@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // 文件操作
   createFile: (filePath, content) => ipcRenderer.invoke('create-file', filePath, content),
+  createFolder: (folderPath) => ipcRenderer.invoke('create-folder', folderPath),
   deleteFile: (filePath) => ipcRenderer.invoke('delete-file', filePath),
   showInExplorer: (filePath) => ipcRenderer.invoke('show-in-explorer', filePath),
   

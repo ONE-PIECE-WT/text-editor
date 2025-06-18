@@ -131,6 +131,17 @@ ipcMain.handle('create-file', async (_, filePath, content) => {
   }
 });
 
+// 创建文件夹
+ipcMain.handle('create-folder', async (_, folderPath) => {
+  try {
+    await fs.promises.mkdir(folderPath, { recursive: true });
+    console.log('文件夹创建成功:', folderPath);
+  } catch (error) {
+    console.error('创建文件夹失败:', error);
+    throw error;
+  }
+});
+
 // 删除文件或文件夹
 ipcMain.handle('delete-file', async (_, filePath) => {
   try {

@@ -79,10 +79,10 @@ const FileNameDialog: React.FC<FileNameDialogProps> = ({
     <div className="file-name-dialog-overlay">
       <div className="file-name-dialog">
         <div className="dialog-header">
-          <h3>新建 {fileType.toUpperCase()} 文件</h3>
+          <h3>{fileType === 'folder' ? '新建文件夹' : `新建 ${fileType.toUpperCase()} 文件`}</h3>
         </div>
         <div className="dialog-content">
-          <label htmlFor="fileName">文件名:</label>
+          <label htmlFor="fileName">{fileType === 'folder' ? '文件夹名:' : '文件名:'}</label>
           <input
             ref={inputRef}
             id="fileName"
@@ -90,7 +90,7 @@ const FileNameDialog: React.FC<FileNameDialogProps> = ({
             value={fileName}
             onChange={handleInputChange}
             className="file-name-input"
-            placeholder={`请输入文件名.${fileType}`}
+            placeholder={fileType === 'folder' ? '请输入文件夹名' : `请输入文件名.${fileType}`}
           />
         </div>
         <div className="dialog-footer">

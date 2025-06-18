@@ -214,6 +214,15 @@ ipcMain.handle("create-file", async (_, filePath, content) => {
     throw error;
   }
 });
+ipcMain.handle("create-folder", async (_, folderPath) => {
+  try {
+    await fs.promises.mkdir(folderPath, { recursive: true });
+    console.log("文件夹创建成功:", folderPath);
+  } catch (error) {
+    console.error("创建文件夹失败:", error);
+    throw error;
+  }
+});
 ipcMain.handle("delete-file", async (_, filePath) => {
   try {
     const stats = await fs.promises.stat(filePath);

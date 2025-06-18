@@ -9,6 +9,7 @@ interface ElectronAPI {
   openFolderDialog: () => void;
   onSelectedFolder: (callback: (folderPath: string) => void) => import('electron').IpcRenderer;
   createFile: (filePath: string, content: string) => Promise<void>;
+  createFolder: (folderPath: string) => Promise<void>;
   deleteFile: (filePath: string) => Promise<void>;
   showInExplorer: (filePath: string) => Promise<void>;
 }

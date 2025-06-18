@@ -424,31 +424,47 @@ function App() {
   const handleFileNameConfirm = async (fileName: string) => {
     const { parentNode, fileType } = fileNameDialog;
     
-    console.log('新建文件', fileName, fileType);
+    console.log('新建', fileType === 'folder' ? '文件夹' : '文件', fileName, fileType);
     
     try {
-      // 如果文件名不包含扩展名，自动添加
-      let finalFileName = fileName;
-      if (!fileName.includes('.')) {
-        finalFileName = `${fileName}.${fileType}`;
-      }
-      
-      // 确定文件创建路径
+      // 确定创建路径
       let targetPath = '';
-      if (parentNode && parentNode.type === 'folder' && parentNode.path) {
-        targetPath = `${parentNode.path}/${finalFileName}`;
-      } else if (fileTree[0]?.path) {
-        // 如果没有指定父节点，在根目录创建
-        targetPath = `${fileTree[0].path}/${finalFileName}`;
+      let finalFileName = fileName;
+      
+      if (fileType === 'folder') {
+        // 创建文件夹，不需要扩展名
+        if (parentNode && parentNode.type === 'folder' && parentNode.path) {
+          targetPath = `${parentNode.path}/${finalFileName}`;
+        } else if (fileTree[0]?.path) {
+          targetPath = `${fileTree[0].path}/${finalFileName}`;
+        } else {
+          console.error('无法确定文件夹创建路径');
+          return;
+        }
       } else {
-        console.error('无法确定文件创建路径');
-        return;
+        // 创建文件，如果文件名不包含扩展名，自动添加
+        if (!fileName.includes('.')) {
+          finalFileName = `${fileName}.${fileType}`;
+        }
+        
+        if (parentNode && parentNode.type === 'folder' && parentNode.path) {
+          targetPath = `${parentNode.path}/${finalFileName}`;
+        } else if (fileTree[0]?.path) {
+          targetPath = `${fileTree[0].path}/${finalFileName}`;
+        } else {
+          console.error('无法确定文件创建路径');
+          return;
+        }
       }
       
-      // 调用Electron API创建文件
-        if (window.electronAPI) {
+      // 调用Electron API创建文件或文件夹
+      if (window.electronAPI) {
+        if (fileType === 'folder') {
+          await window.electronAPI.createFolder(targetPath);
+        } else {
           await window.electronAPI.createFile(targetPath, '');
-          console.log('文件创建成功:', targetPath);
+        }
+          console.log(fileType === 'folder' ? '文件夹创建成功:' : '文件创建成功:', targetPath);
           
           // 刷新文件树 - 重新加载父文件夹内容
           const parentPath = parentNode ? parentNode.path : fileTree[0]?.path;
@@ -499,6 +515,11 @@ function App() {
                 useEditorStore.getState().setFileTree(fileTree);
               }
               
+              // 恢复展开状态
+              setTimeout(async () => {
+                await stateSync.restoreState();
+              }, 100);
+              
               console.log('文件树已刷新');
             } catch (error) {
               console.error('刷新文件树失败:', error);
@@ -527,7 +548,11 @@ function App() {
 
   const handleNewFolder = (parentNode?: FileNode) => {
     console.log('新建文件夹', parentNode);
-    // TODO: 实现新建文件夹功能
+    setFileNameDialog({
+      isVisible: true,
+      fileType: 'folder',
+      parentNode: parentNode || null
+    });
   };
 
   const handleShowInExplorer = (node: FileNode) => {
@@ -611,6 +636,12 @@ function App() {
             }))
           }];
           useEditorStore.getState().setFileTree(newFileTree);
+          
+          // 恢复展开状态
+          setTimeout(async () => {
+            await stateSync.restoreState();
+          }, 100);
+          
           console.log('文件树已刷新');
         } catch (error) {
           console.error('刷新文件树失败:', error);
