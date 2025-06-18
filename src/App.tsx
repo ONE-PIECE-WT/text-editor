@@ -106,6 +106,53 @@ function App() {
     }
   };
   
+  // 应用启动时恢复工作区
+  useEffect(() => {
+    const restoreWorkspace = async () => {
+      const lastWorkspacePath = stateSync.getLastWorkspacePath();
+      if (lastWorkspacePath) {
+        console.log('恢复上次工作区:', lastWorkspacePath);
+        try {
+          // 获取文件夹内容
+          const files = await window.electronAPI.getFiles(lastWorkspacePath);
+          
+          // 将文件系统内容转换为文件树结构
+          const fileTree = [
+            {
+              id: lastWorkspacePath, // 使用路径作为ID
+              name: lastWorkspacePath.split('\\').pop() || '根目录',
+              type: 'folder' as const,
+              path: lastWorkspacePath,
+              expanded: true,
+              children: files.map((file) => ({
+                id: file.path, // 使用路径作为ID
+                name: file.name,
+                type: file.isDirectory ? 'folder' as const : 'file' as const,
+                path: file.path,
+                expanded: false,
+              }))
+            }
+          ];
+          
+          // 更新文件树状态
+          useEditorStore.getState().setFileTree(fileTree);
+          
+          // 恢复展开状态（延迟执行，确保文件树已更新）
+          setTimeout(async () => {
+            await stateSync.restoreState();
+          }, 100);
+          
+          console.log('工作区恢复成功');
+        } catch (error) {
+          console.error('恢复工作区失败:', error);
+        }
+      }
+    };
+    
+    // 启动时恢复工作区
+    restoreWorkspace();
+  }, []);
+  
   // 监听打开文件夹事件
   useEffect(() => {
     // 定义事件处理函数
@@ -132,13 +179,13 @@ function App() {
         // 将文件系统内容转换为文件树结构
         const fileTree = [
           {
-            id: 'root',
+            id: folderPath, // 使用路径作为ID
             name: folderPath.split('\\').pop() || '根目录',
             type: 'folder' as const,
             path: folderPath, // 保存完整路径，便于后续操作
             expanded: true,
-            children: files.map((file, index) => ({
-              id: `file-${index}`,
+            children: files.map((file) => ({
+              id: file.path, // 使用路径作为ID
               name: file.name,
               type: file.isDirectory ? 'folder' as const : 'file' as const,
               path: file.path,
@@ -153,6 +200,11 @@ function App() {
         
         // 保存工作区路径到持久化存储
         stateSync.saveWorkspacePath(folderPath);
+        
+        // 恢复展开状态（延迟执行，确保文件树已更新）
+        setTimeout(async () => {
+          await stateSync.restoreState();
+        }, 100);
         
         // 显示成功消息
         console.log(`成功加载文件夹: ${folderPath}`);
@@ -289,8 +341,8 @@ function App() {
           console.log(`加载文件夹 ${node.path} 内容:`, files);
           
           // 将文件系统内容转换为文件树结构
-          const children = files.map((file, index) => ({
-            id: `${node.id}-child-${index}`,
+          const children = files.map((file) => ({
+            id: file.path, // 使用路径作为ID
             name: file.name,
             type: file.isDirectory ? 'folder' as const : 'file' as const,
             path: file.path,
@@ -363,7 +415,7 @@ function App() {
       setFileNameDialog({
         isVisible: true,
         fileType,
-        parentNode
+        parentNode: parentNode || null
       });
     }
   };
@@ -406,8 +458,8 @@ function App() {
               
               if (parentNode) {
                 // 如果有父节点，更新该节点的子内容
-                const children = files.map((file, index) => ({
-                  id: `${parentNode.id}-child-${index}`,
+                const children = files.map((file) => ({
+                  id: file.path, // 使用路径作为ID
                   name: file.name,
                   type: file.isDirectory ? 'folder' as const : 'file' as const,
                   path: file.path,
@@ -431,13 +483,13 @@ function App() {
               } else {
                 // 如果没有父节点，刷新根目录
                 const fileTree = [{
-                  id: 'root',
+                  id: parentPath, // 使用路径作为ID
                   name: parentPath.split('\\').pop() || '根目录',
                   type: 'folder' as const,
                   path: parentPath,
                   expanded: true,
-                  children: files.map((file, index) => ({
-                    id: `file-${index}`,
+                  children: files.map((file) => ({
+                    id: file.path, // 使用路径作为ID
                     name: file.name,
                     type: file.isDirectory ? 'folder' as const : 'file' as const,
                     path: file.path,
@@ -532,6 +584,10 @@ function App() {
     }
     
     try {
+      if (!targetNode.path) {
+        console.error('文件路径不存在');
+        return;
+      }
       await window.electronAPI.deleteFile(targetNode.path);
       console.log('删除成功:', targetNode.path);
       
@@ -541,13 +597,13 @@ function App() {
         try {
           const files = await window.electronAPI.getFiles(rootPath);
           const newFileTree = [{
-            id: 'root',
+            id: rootPath, // 使用路径作为ID
             name: rootPath.split('\\').pop() || '根目录',
             type: 'folder' as const,
             path: rootPath,
             expanded: true,
-            children: files.map((file, index) => ({
-              id: `file-${index}`,
+            children: files.map((file) => ({
+              id: file.path, // 使用路径作为ID
               name: file.name,
               type: file.isDirectory ? 'folder' as const : 'file' as const,
               path: file.path,
@@ -721,7 +777,7 @@ function App() {
                   language={selectedFile ? getFileLanguage(selectedFile.name) : 'javascript'}
                   onChange={(value) => {
                     // 可以在这里添加文件内容变更处理
-                    console.log('文件内容已变更:', value);
+                    // console.log('文件内容已变更:', value);
                   }}
                   onFilePathComplete={handleFilePathComplete}
                 />

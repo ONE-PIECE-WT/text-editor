@@ -18,13 +18,13 @@ class StateSyncService {
     }, 0);
   }
 
-  private initialize() {
+  private async initialize() {
     this.editorStore = useEditorStore.getState();
     this.persistStore = usePersistStore.getState();
     this.isInitialized = true;
     
     // 恢复状态
-    this.restoreState();
+    await this.restoreState();
     
     // 设置状态监听
     this.setupStateListeners();
@@ -33,7 +33,7 @@ class StateSyncService {
   /**
    * 从持久化存储恢复状态
    */
-  private restoreState() {
+  public async restoreState() {
     if (!this.isInitialized) return;
     
     const persistedState = this.persistStore;
@@ -66,31 +66,66 @@ class StateSyncService {
     }
     
     // 恢复文件夹展开状态
-    this.restoreExpandedFolders(persistedState.expandedFolders);
+    await this.restoreExpandedFolders(persistedState.expandedFolders);
   }
 
   /**
    * 恢复文件夹展开状态
    */
-  private restoreExpandedFolders(expandedFolderIds: Set<string>) {
-    if (expandedFolderIds.size === 0) return;
+  private async restoreExpandedFolders(expandedFolderIds: Set<string>) {
+    console.log('恢复展开状态，展开的文件夹ID:', Array.from(expandedFolderIds));
+    if (expandedFolderIds.size === 0) {
+      console.log('没有需要恢复的展开状态');
+      return;
+    }
     
-    const updateExpandedState = (nodes: FileNode[]): FileNode[] => {
-      return nodes.map(node => {
+    const updateExpandedState = async (nodes: FileNode[]): Promise<FileNode[]> => {
+      const updatedNodes = [];
+      
+      for (const node of nodes) {
         if (node.type === 'folder') {
           const shouldExpand = expandedFolderIds.has(node.id);
-          return {
+          console.log(`文件夹 ${node.name} (ID: ${node.id}) 应该展开: ${shouldExpand}`);
+          
+          let updatedNode = {
             ...node,
             expanded: shouldExpand,
-            children: node.children ? updateExpandedState(node.children) : undefined,
           };
+          
+          // 如果需要展开且没有子内容，则加载子内容
+          if (shouldExpand && node.path && (!node.children || node.children.length === 0)) {
+            try {
+              console.log(`加载文件夹内容: ${node.path}`);
+              const files = await window.electronAPI.getFiles(node.path);
+              const children = files.map((file) => ({
+                id: file.path,
+                name: file.name,
+                type: file.isDirectory ? 'folder' as const : 'file' as const,
+                path: file.path,
+                expanded: false,
+              }));
+              updatedNode.children = await updateExpandedState(children);
+            } catch (error) {
+              console.error(`加载文件夹 ${node.path} 内容失败:`, error);
+              updatedNode.children = node.children ? await updateExpandedState(node.children) : undefined;
+            }
+          } else {
+            updatedNode.children = node.children ? await updateExpandedState(node.children) : undefined;
+          }
+          
+          updatedNodes.push(updatedNode);
+        } else {
+          updatedNodes.push(node);
         }
-        return node;
-      });
+      }
+      
+      return updatedNodes;
     };
     
     const currentFileTree = useEditorStore.getState().fileTree;
-    const updatedFileTree = updateExpandedState(currentFileTree);
+    console.log('当前文件树:', currentFileTree);
+    const updatedFileTree = await updateExpandedState(currentFileTree);
+    console.log('更新后的文件树:', updatedFileTree);
     useEditorStore.setState({ fileTree: updatedFileTree });
   }
 
@@ -139,6 +174,7 @@ class StateSyncService {
     const collectExpandedIds = (nodes: FileNode[]) => {
       nodes.forEach(node => {
         if (node.type === 'folder' && node.expanded) {
+          console.log(`保存展开状态: ${node.name} (ID: ${node.id})`);
           expandedIds.push(node.id);
         }
         if (node.children) {
@@ -148,6 +184,7 @@ class StateSyncService {
     };
     
     collectExpandedIds(fileTree);
+    console.log('保存的展开文件夹ID列表:', expandedIds);
     this.persistStore.setExpandedFolders(expandedIds);
   }
 
@@ -200,10 +237,11 @@ export const stateSyncService = new StateSyncService();
 // 导出便捷的钩子函数
 export const useStateSync = () => {
   return {
-    saveWorkspacePath: stateSyncService.saveWorkspacePath.bind(stateSyncService),
-    getLastWorkspacePath: stateSyncService.getLastWorkspacePath.bind(stateSyncService),
-    updateEditorSettings: stateSyncService.updateEditorSettings.bind(stateSyncService),
-    getEditorSettings: stateSyncService.getEditorSettings.bind(stateSyncService),
-    resetAllState: stateSyncService.resetAllState.bind(stateSyncService),
-  };
+      saveWorkspacePath: (path: string) => stateSyncService.saveWorkspacePath(path),
+      getLastWorkspacePath: () => stateSyncService.getLastWorkspacePath(),
+      updateEditorSettings: (settings: any) => stateSyncService.updateEditorSettings(settings),
+      getEditorSettings: () => stateSyncService.getEditorSettings(),
+      resetState: () => stateSyncService.resetAllState(),
+      restoreState: () => stateSyncService.restoreState(),
+    };
 };
