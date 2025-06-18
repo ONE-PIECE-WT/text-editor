@@ -411,6 +411,8 @@ body, html, #root {
   font-size: 14px;
   display: flex;
   align-items: center;
+  width: 14px;
+  justify-content: center;
 }
 
 .file-tree-item .folder-icon {
@@ -419,6 +421,7 @@ body, html, #root {
 
 .file-tree-item .file-icon {
   color: #75beff;
+  margin-left: 20px; /* 为文件图标添加左边距，使其与文件夹图标对齐 */
 }
 
 .file-tree-item .name {
