@@ -26,13 +26,19 @@ const createFilePathCompletion = (onFilePathComplete?: (path: string) => Promise
         
         const line = context.state.doc.lineAt(context.pos);
         const lineText = line.text;
+        const cursorPos = context.pos - line.from;
         
-        // 检测文件路径模式（简单的启发式检测）
-        const pathMatch = lineText.match(/["']([^"']*?)$/); // 匹配引号内的路径
-        if (!pathMatch) return null;
+        // 获取光标前的单词（支持中文字符）
+        const beforeCursor = lineText.slice(0, cursorPos);
+        const wordMatch = beforeCursor.match(/([\w\u4e00-\u9fa5]*)$/);
         
-        const partialPath = pathMatch[1];
-        const from = line.from + pathMatch.index! + 1; // 引号后的位置
+        if (!wordMatch) return null;
+        
+        const partialPath = wordMatch[1];
+        const from = line.from + wordMatch.index!;
+        
+        // 如果输入的字符太少，不触发补全
+        if (partialPath.length < 1) return null;
         
         try {
           // 获取文件列表
@@ -43,7 +49,7 @@ const createFilePathCompletion = (onFilePathComplete?: (path: string) => Promise
             options: files.map(file => ({
               label: file,
               type: 'file',
-              info: '文件路径'
+              info: '设定文件'
             }))
           };
         } catch (error) {
