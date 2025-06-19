@@ -17,20 +17,25 @@ interface CodeMirrorEditorProps {
   onFilePathComplete?: (path: string) => Promise<string[]>;
 }
 
+// 防抖请求ID
+let requestId = 0;
+
 // 文件路径自动补全函数
 const createFilePathCompletion = (onFilePathComplete?: (path: string) => Promise<string[]>) => {
   return autocompletion({
     override: [
       async (context: CompletionContext) => {
+        const currentRequest = ++requestId;
+        
         if (!onFilePathComplete) return null;
         
         const line = context.state.doc.lineAt(context.pos);
         const lineText = line.text;
         const cursorPos = context.pos - line.from;
         
-        // 获取光标前的单词（支持中文字符）
+        // 获取光标前的单词（支持中文字符、路径分隔符等）
         const beforeCursor = lineText.slice(0, cursorPos);
-        const wordMatch = beforeCursor.match(/([\w\u4e00-\u9fa5]*)$/);
+        const wordMatch = beforeCursor.match(/([\p{L}\p{N}_\-\.\/]*)$/u);
         
         if (!wordMatch) return null;
         
@@ -44,13 +49,30 @@ const createFilePathCompletion = (onFilePathComplete?: (path: string) => Promise
           // 获取文件列表
           const files = await onFilePathComplete(partialPath);
           
+          // 检查请求是否已被新请求替代
+          if (currentRequest !== requestId) return null;
+          
+          // 清理文件列表，过滤掉无效项
+          const sanitizedFiles = files
+            .filter(file => typeof file === 'string' && file.trim().length > 0)
+            .map(file => file.trim());
+          
+          // 调试输出
+          console.log('编辑器接收到的文件列表:', files);
+          console.log('清洗后的文件列表:', sanitizedFiles);
+          sanitizedFiles.forEach((f, i) => console.log(`文件${i}:`, f, '长度:', f.length));
+          
           return {
             from,
-            options: files.map(file => ({
+            options: sanitizedFiles.map(file => ({
               label: file,
               type: 'file',
-              info: '设定文件'
-            }))
+              info: '设定文件',
+              apply: file,  // 明确指定插入文本
+              boost: 99     // 提升权重
+            })),
+            validFor: /^[\p{L}\p{N}_\-\.\/]*$/u,  // 明确正则支持的路径格式
+            filter: false     //关闭 CodeMirror 自动过滤
           };
         } catch (error) {
           console.error('获取文件路径补全失败:', error);
@@ -108,6 +130,9 @@ const CodeMirrorEditor: React.FC<CodeMirrorEditorProps> = ({
         oneDark, // 暗色主题
         getLanguageSupport(language),
         createFilePathCompletion(onFilePathComplete),
+        autocompletion({
+          maxRenderedOptions: 100 // 增加最大显示选项数量
+        }),
         EditorView.updateListener.of((update) => {
           if (update.docChanged && onChange) {
             onChange(update.state.doc.toString());
