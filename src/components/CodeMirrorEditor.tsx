@@ -10,6 +10,25 @@ import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
 import { csg } from './CSGLanguage';
 
+// 自定义补全样式主题
+const completionTheme = EditorView.theme({
+  '.cm-tooltip-autocomplete ul li': {
+    display: 'flex !important',
+    justifyContent: 'space-between !important',
+    alignItems: 'center !important'
+  },
+  '.cm-completionLabel': {
+    fontSize: '15px !important', // 匹配项字体变大一号
+    fontWeight: '500 !important'
+  },
+  '.cm-completionDetail': {
+    fontSize: '13px !important', // 路径字体大小不变
+    color: '#888 !important',   // 路径颜色使用更暗的颜色
+    marginLeft: 'auto !important',
+    opacity: '0.7 !important'
+  }
+});
+
 interface CodeMirrorEditorProps {
   value: string;
   language?: string;
@@ -64,15 +83,27 @@ const createFilePathCompletion = (onFilePathComplete?: (path: string) => Promise
           
           return {
             from,
-            options: sanitizedFiles.map(file => ({
-              label: file,
-              type: 'file',
-              info: '设定文件',
-              apply: file,  // 明确指定插入文本
-              boost: 99     // 提升权重
-            })),
-            validFor: /^[\p{L}\p{N}_\-\.\/]*$/u,  // 明确正则支持的路径格式
-            filter: false     //关闭 CodeMirror 自动过滤
+            options: sanitizedFiles.map(file => {
+              // 提取文件夹路径作为label显示
+              const pathParts = file.split('/');
+              const fileName = pathParts[pathParts.length - 1];
+              const folderPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : '根目录';
+              
+              return {
+                label: fileName,
+                type: 'file',
+                detail: folderPath, // 显示文件夹路径
+                apply: file,  // 明确指定插入文本
+                boost: 99     // 提升权重
+              };
+            }),
+            validFor: (text, from, to, state) => {
+              // 获取当前输入的文本
+              const currentInput = text.slice(from, to);
+              // 只有当输入长度变化时才重新触发补全
+              return false; // 强制每次输入都重新获取补全
+            },
+            filter: false     // 关闭自动过滤，使用我们自己的匹配逻辑
           };
         } catch (error) {
           console.error('获取文件路径补全失败:', error);
@@ -128,6 +159,7 @@ const CodeMirrorEditor: React.FC<CodeMirrorEditorProps> = ({
       extensions: [
         basicSetup,
         oneDark, // 暗色主题
+        completionTheme, // 自定义补全样式
         getLanguageSupport(language),
         createFilePathCompletion(onFilePathComplete),
         autocompletion({
