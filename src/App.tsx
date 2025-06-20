@@ -95,19 +95,21 @@ function App() {
       const completions: string[] = [];
       
       // 递归获取设定文件夹下所有文件的函数
-      const getAllFilesRecursively = async (dirPath: string): Promise<string[]> => {
+      const getAllFilesRecursively = async (dirPath: string, basePath: string = ''): Promise<string[]> => {
         const allFiles: string[] = [];
         try {
           const files = await window.electronAPI.getFiles(dirPath);
           for (const file of files) {
             if (file.isDirectory) {
-              // 递归遍历子文件夹
-              const subFiles = await getAllFilesRecursively(file.path);
+              // 递归遍历子文件夹，传递相对路径
+              const relativePath = basePath ? `${basePath}/${file.name}` : file.name;
+              const subFiles = await getAllFilesRecursively(file.path, relativePath);
               allFiles.push(...subFiles);
             } else {
-              // 去掉文件后缀名
+              // 去掉文件后缀名，但保留路径信息
               const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-              allFiles.push(nameWithoutExt);
+              const fullPath = basePath ? `${basePath}/${nameWithoutExt}` : nameWithoutExt;
+              allFiles.push(fullPath);
             }
           }
         } catch (error) {
@@ -120,7 +122,7 @@ function App() {
       if (currentFolder) {
         const settingsPath = `${currentFolder}\\设定`;
         try {
-          const allSettingsFiles = await getAllFilesRecursively(settingsPath);
+          const allSettingsFiles = await getAllFilesRecursively(settingsPath, '设定');
           // 智能模糊匹配函数
           const fuzzyMatch = (fileName: string, query: string): { match: boolean; score: number } => {
             const lowerFileName = fileName.toLowerCase();

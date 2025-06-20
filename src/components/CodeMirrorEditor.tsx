@@ -84,10 +84,13 @@ const createFilePathCompletion = (onFilePathComplete?: (path: string) => Promise
           return {
             from,
             options: sanitizedFiles.map(file => {
-              // 提取文件夹路径作为label显示
-              const pathParts = file.split('/');
+              // 提取文件夹路径作为label显示，支持Windows和Unix路径分隔符
+              const pathParts = file.split(/[\/\\]/);
               const fileName = pathParts[pathParts.length - 1];
               const folderPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : '根目录';
+              
+              console.log('文件路径解析:', file, '-> 文件名:', fileName, '文件夹:', folderPath);
+              console.log('pathParts:', pathParts);
               
               return {
                 label: fileName,
