@@ -28,5 +28,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteFile: (filePath) => ipcRenderer.invoke('delete-file', filePath),
   showInExplorer: (filePath) => ipcRenderer.invoke('show-in-explorer', filePath),
   
+  // 主题切换
+  setNativeTheme: (theme) => ipcRenderer.invoke('set-native-theme', theme),
+  
   // 可以在这里添加更多的API
 });

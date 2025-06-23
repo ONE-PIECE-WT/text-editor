@@ -18,9 +18,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
     setSettings(newSettings);
     stateSync.updateEditorSettings({ [key]: value });
     
-    // 如果是主题设置，立即应用到document
+    // 如果是主题设置，立即应用到document和原生主题
     if (key === 'theme') {
       document.documentElement.setAttribute('data-theme', value);
+      // 同步设置原生主题
+      if (window.electronAPI?.setNativeTheme) {
+        window.electronAPI.setNativeTheme(value);
+      }
     }
   };
 

@@ -1,4 +1,4 @@
-import { Menu, BrowserWindow, app, ipcMain, shell, dialog } from "electron";
+import { Menu, BrowserWindow, app, ipcMain, nativeTheme, shell, dialog } from "electron";
 import path, { dirname } from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -133,6 +133,9 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: "大触",
+    titleBarStyle: "default",
+    backgroundColor: "#1e1e1e",
+    // 深色背景
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       // 确保使用正确的预加载脚本路径
@@ -155,6 +158,15 @@ function createWindow() {
   mainWindow.webContents.on("did-finish-load", () => {
   });
 }
+ipcMain.handle("set-native-theme", async (_, theme) => {
+  try {
+    nativeTheme.themeSource = theme;
+    return { success: true };
+  } catch (error) {
+    console.error("Error setting native theme:", error);
+    return { success: false, error: error.message };
+  }
+});
 ipcMain.handle("get-files", async (_, dirPath) => {
   try {
     const files = await fs.promises.readdir(dirPath, { withFileTypes: true });
@@ -248,6 +260,7 @@ ipcMain.handle("show-in-explorer", async (_, filePath) => {
   }
 });
 app.whenReady().then(() => {
+  nativeTheme.themeSource = "dark";
   createWindow();
   Menu.setApplicationMenu(createMenu());
   app.on("activate", () => {

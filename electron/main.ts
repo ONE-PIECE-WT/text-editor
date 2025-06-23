@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, nativeTheme } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import { createMenu } from './menu'
@@ -24,6 +24,8 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: '大触',
+    titleBarStyle: 'default',
+    backgroundColor: '#1e1e1e', // 深色背景
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // 确保使用正确的预加载脚本路径
       nodeIntegration: false,
@@ -55,6 +57,17 @@ function createWindow() {
     // 不再自动发送默认文件夹路径，让应用使用持久化存储的路径
   })
 }
+
+// 处理主题切换
+ipcMain.handle('set-native-theme', async (_, theme) => {
+  try {
+    nativeTheme.themeSource = theme;
+    return { success: true };
+  } catch (error) {
+    console.error('Error setting native theme:', error);
+    return { success: false, error: error.message };
+  }
+});
 
 // 实现文件系统API
 ipcMain.handle('get-files', async (_, dirPath) => {
@@ -176,6 +189,9 @@ ipcMain.handle('show-in-explorer', async (_, filePath) => {
 
 // 当Electron完成初始化并准备创建浏览器窗口时调用此方法
 app.whenReady().then(() => {
+  // 设置原生主题为深色
+  nativeTheme.themeSource = 'dark'
+  
   createWindow()
   
   // 隐藏原生菜单栏并设置自定义菜单

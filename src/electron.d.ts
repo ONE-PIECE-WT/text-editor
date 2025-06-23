@@ -12,6 +12,7 @@ interface ElectronAPI {
   createFolder: (folderPath: string) => Promise<void>;
   deleteFile: (filePath: string) => Promise<void>;
   showInExplorer: (filePath: string) => Promise<void>;
+  setNativeTheme: (theme: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 declare interface Window {
