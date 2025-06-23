@@ -1,8 +1,8 @@
-import { Menu, BrowserWindow, app, ipcMain, nativeTheme, shell, dialog } from "electron";
-import path, { dirname } from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-const ZHTextContainer = {
+import { Menu as m, BrowserWindow as u, app as c, ipcMain as s, nativeTheme as h, shell as g, dialog as b } from "electron";
+import i, { dirname as w } from "path";
+import n from "fs";
+import { fileURLToPath as y } from "url";
+const f = {
   file: "文件",
   new: "新建",
   open: "打开",
@@ -27,107 +27,98 @@ const ZHTextContainer = {
   toggleFullscreen: "全屏",
   help: "帮助",
   about: "关于"
-};
-const TextContainer = ZHTextContainer;
-const createMenuTemplate = () => {
-  const template = [
-    {
-      label: TextContainer.file,
-      submenu: [
-        {
-          label: TextContainer.new,
-          accelerator: "CmdOrCtrl+N",
-          click: () => {
-            console.log("新建文件");
-          }
-        },
-        {
-          label: TextContainer.open,
-          accelerator: "CmdOrCtrl+O",
-          click: () => {
-            console.log("打开文件");
-          }
-        },
-        {
-          label: TextContainer.openFolder,
-          accelerator: "CmdOrCtrl+Shift+O",
-          click: () => {
-            console.log("打开文件夹");
-            const mainWindow2 = BrowserWindow.getFocusedWindow();
-            if (mainWindow2) {
-              mainWindow2.webContents.send("open-folder");
-            }
-          }
-        },
-        { type: "separator" },
-        {
-          label: TextContainer.save,
-          accelerator: "CmdOrCtrl+S",
-          click: () => {
-            console.log("保存文件");
-          }
-        },
-        { type: "separator" },
-        {
-          label: TextContainer.exit,
-          accelerator: "CmdOrCtrl+Q",
-          click: () => {
-            app.quit();
-          }
+}, r = f, _ = () => [
+  {
+    label: r.file,
+    submenu: [
+      {
+        label: r.new,
+        accelerator: "CmdOrCtrl+N",
+        click: () => {
+          console.log("新建文件");
         }
-      ]
-    },
-    {
-      label: TextContainer.edit,
-      submenu: [
-        { role: "undo", label: TextContainer.undo },
-        { role: "redo", label: TextContainer.redo },
-        { type: "separator" },
-        { role: "cut", label: TextContainer.cut },
-        { role: "copy", label: TextContainer.copy },
-        { role: "paste", label: TextContainer.paste },
-        { role: "delete", label: TextContainer.delete },
-        { type: "separator" },
-        { role: "selectAll", label: TextContainer.selectAll }
-      ]
-    },
-    {
-      label: TextContainer.view,
-      submenu: [
-        { role: "reload", label: TextContainer.reload },
-        { role: "forceReload", label: TextContainer.forceReload },
-        { role: "toggleDevTools", label: TextContainer.toggleDevTools },
-        { type: "separator" },
-        { role: "resetZoom", label: TextContainer.resetZoom },
-        { role: "zoomIn", label: TextContainer.zoomIn },
-        { role: "zoomOut", label: TextContainer.zoomOut },
-        { type: "separator" },
-        { role: "togglefullscreen", label: TextContainer.toggleFullscreen }
-      ]
-    },
-    {
-      label: TextContainer.help,
-      submenu: [
-        {
-          label: TextContainer.about,
-          click: () => {
-            console.log("关于");
-          }
+      },
+      {
+        label: r.open,
+        accelerator: "CmdOrCtrl+O",
+        click: () => {
+          console.log("打开文件");
         }
-      ]
-    }
-  ];
-  return template;
+      },
+      {
+        label: r.openFolder,
+        accelerator: "CmdOrCtrl+Shift+O",
+        click: () => {
+          console.log("打开文件夹");
+          const e = u.getFocusedWindow();
+          e && e.webContents.send("open-folder");
+        }
+      },
+      { type: "separator" },
+      {
+        label: r.save,
+        accelerator: "CmdOrCtrl+S",
+        click: () => {
+          console.log("保存文件");
+        }
+      },
+      { type: "separator" },
+      {
+        label: r.exit,
+        accelerator: "CmdOrCtrl+Q",
+        click: () => {
+          c.quit();
+        }
+      }
+    ]
+  },
+  {
+    label: r.edit,
+    submenu: [
+      { role: "undo", label: r.undo },
+      { role: "redo", label: r.redo },
+      { type: "separator" },
+      { role: "cut", label: r.cut },
+      { role: "copy", label: r.copy },
+      { role: "paste", label: r.paste },
+      { role: "delete", label: r.delete },
+      { type: "separator" },
+      { role: "selectAll", label: r.selectAll }
+    ]
+  },
+  {
+    label: r.view,
+    submenu: [
+      { role: "reload", label: r.reload },
+      { role: "forceReload", label: r.forceReload },
+      { role: "toggleDevTools", label: r.toggleDevTools },
+      { type: "separator" },
+      { role: "resetZoom", label: r.resetZoom },
+      { role: "zoomIn", label: r.zoomIn },
+      { role: "zoomOut", label: r.zoomOut },
+      { type: "separator" },
+      { role: "togglefullscreen", label: r.toggleFullscreen }
+    ]
+  },
+  {
+    label: r.help,
+    submenu: [
+      {
+        label: r.about,
+        click: () => {
+          console.log("关于");
+        }
+      }
+    ]
+  }
+], v = () => {
+  const l = _();
+  return m.buildFromTemplate(l);
 };
-const createMenu = () => {
-  const menuTemplate = createMenuTemplate();
-  return Menu.buildFromTemplate(menuTemplate);
-};
-let mainWindow = null;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-function createWindow() {
-  mainWindow = new BrowserWindow({
+let t = null;
+const C = y(import.meta.url), d = w(C);
+function p() {
+  if (t = new u({
     width: 1200,
     height: 800,
     minWidth: 800,
@@ -137,136 +128,107 @@ function createWindow() {
     backgroundColor: "#1e1e1e",
     // 深色背景
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: i.join(d, "preload.js"),
       // 确保使用正确的预加载脚本路径
-      nodeIntegration: false,
-      contextIsolation: true
+      nodeIntegration: !1,
+      contextIsolation: !0
     },
     // 窗口图标
-    icon: path.join(__dirname, "../public/logo.ico")
-  });
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-    mainWindow.webContents.openDevTools();
-  } else {
-    const indexHtml = path.join(__dirname, "../dist/index.html");
-    mainWindow.loadFile(indexHtml);
+    icon: i.join(d, "../public/logo.ico")
+  }), process.env.VITE_DEV_SERVER_URL)
+    t.loadURL(process.env.VITE_DEV_SERVER_URL), t.webContents.openDevTools();
+  else {
+    const l = i.join(d, "../dist/index.html");
+    t.loadFile(l);
   }
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
-  mainWindow.webContents.on("did-finish-load", () => {
+  t.on("closed", () => {
+    t = null;
+  }), t.webContents.on("did-finish-load", () => {
   });
 }
-ipcMain.handle("set-native-theme", async (_, theme) => {
+s.handle("set-native-theme", async (l, e) => {
   try {
-    nativeTheme.themeSource = theme;
-    return { success: true };
-  } catch (error) {
-    console.error("Error setting native theme:", error);
-    return { success: false, error: error.message };
+    return h.themeSource = e, { success: !0 };
+  } catch (o) {
+    return console.error("Error setting native theme:", o), { success: !1, error: o.message };
   }
 });
-ipcMain.handle("get-files", async (_, dirPath) => {
+s.handle("get-files", async (l, e) => {
   try {
-    const files = await fs.promises.readdir(dirPath, { withFileTypes: true });
-    return files.map((file) => ({
-      name: file.name,
-      isDirectory: file.isDirectory(),
-      path: path.join(dirPath, file.name)
+    return (await n.promises.readdir(e, { withFileTypes: !0 })).map((a) => ({
+      name: a.name,
+      isDirectory: a.isDirectory(),
+      path: i.join(e, a.name)
     }));
-  } catch (error) {
-    console.error("Error reading directory:", error);
-    return [];
+  } catch (o) {
+    return console.error("Error reading directory:", o), [];
   }
 });
-ipcMain.handle("get-file-content", async (_, filePath) => {
+s.handle("get-file-content", async (l, e) => {
   try {
-    const content = await fs.promises.readFile(filePath, "utf-8");
-    return content;
-  } catch (error) {
-    console.error("Error reading file:", error);
-    throw error;
+    return await n.promises.readFile(e, "utf-8");
+  } catch (o) {
+    throw console.error("Error reading file:", o), o;
   }
 });
-ipcMain.on("open-folder-dialog", async (event) => {
-  if (mainWindow) {
+s.on("open-folder-dialog", async (l) => {
+  if (t)
     try {
       console.log("打开文件夹对话框");
-      const result = await dialog.showOpenDialog(mainWindow, {
+      const e = await b.showOpenDialog(t, {
         properties: ["openDirectory"],
         title: "选择要打开的文件夹",
         buttonLabel: "打开文件夹"
       });
-      if (!result.canceled && result.filePaths.length > 0) {
-        const selectedPath = result.filePaths[0];
-        console.log("用户选择的文件夹路径:", selectedPath);
+      if (!e.canceled && e.filePaths.length > 0) {
+        const o = e.filePaths[0];
+        console.log("用户选择的文件夹路径:", o);
         try {
-          await fs.promises.access(selectedPath, fs.constants.R_OK);
-          event.reply("selected-folder", selectedPath);
-        } catch (error) {
-          console.error("无法访问选择的文件夹:", error);
+          await n.promises.access(o, n.constants.R_OK), l.reply("selected-folder", o);
+        } catch (a) {
+          console.error("无法访问选择的文件夹:", a);
         }
-      } else {
+      } else
         console.log("用户取消了文件夹选择");
-      }
-    } catch (error) {
-      console.error("打开文件夹对话框时出错:", error);
+    } catch (e) {
+      console.error("打开文件夹对话框时出错:", e);
     }
-  } else {
+  else
     console.error("主窗口不存在，无法打开文件夹对话框");
-  }
 });
-ipcMain.handle("create-file", async (_, filePath, content) => {
+s.handle("create-file", async (l, e, o) => {
   try {
-    await fs.promises.writeFile(filePath, content, "utf-8");
-    console.log("文件创建成功:", filePath);
-  } catch (error) {
-    console.error("创建文件失败:", error);
-    throw error;
+    await n.promises.writeFile(e, o, "utf-8"), console.log("文件创建成功:", e);
+  } catch (a) {
+    throw console.error("创建文件失败:", a), a;
   }
 });
-ipcMain.handle("create-folder", async (_, folderPath) => {
+s.handle("create-folder", async (l, e) => {
   try {
-    await fs.promises.mkdir(folderPath, { recursive: true });
-    console.log("文件夹创建成功:", folderPath);
-  } catch (error) {
-    console.error("创建文件夹失败:", error);
-    throw error;
+    await n.promises.mkdir(e, { recursive: !0 }), console.log("文件夹创建成功:", e);
+  } catch (o) {
+    throw console.error("创建文件夹失败:", o), o;
   }
 });
-ipcMain.handle("delete-file", async (_, filePath) => {
+s.handle("delete-file", async (l, e) => {
   try {
-    const stats = await fs.promises.stat(filePath);
-    if (stats.isDirectory()) {
-      await fs.promises.rmdir(filePath, { recursive: true });
-      console.log("文件夹删除成功:", filePath);
-    } else {
-      await fs.promises.unlink(filePath);
-      console.log("文件删除成功:", filePath);
-    }
-  } catch (error) {
-    console.error("删除失败:", error);
-    throw error;
+    (await n.promises.stat(e)).isDirectory() ? (await n.promises.rmdir(e, { recursive: !0 }), console.log("文件夹删除成功:", e)) : (await n.promises.unlink(e), console.log("文件删除成功:", e));
+  } catch (o) {
+    throw console.error("删除失败:", o), o;
   }
 });
-ipcMain.handle("show-in-explorer", async (_, filePath) => {
+s.handle("show-in-explorer", async (l, e) => {
   try {
-    shell.showItemInFolder(filePath);
-    console.log("在资源管理器中显示:", filePath);
-  } catch (error) {
-    console.error("显示文件失败:", error);
-    throw error;
+    g.showItemInFolder(e), console.log("在资源管理器中显示:", e);
+  } catch (o) {
+    throw console.error("显示文件失败:", o), o;
   }
 });
-app.whenReady().then(() => {
-  nativeTheme.themeSource = "dark";
-  createWindow();
-  Menu.setApplicationMenu(createMenu());
-  app.on("activate", () => {
-    if (mainWindow === null) createWindow();
+c.whenReady().then(() => {
+  h.themeSource = "dark", p(), m.setApplicationMenu(v()), c.on("activate", () => {
+    t === null && p();
   });
 });
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+c.on("window-all-closed", () => {
+  process.platform !== "darwin" && c.quit();
 });
