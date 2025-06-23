@@ -23,13 +23,14 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    title: '大触',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // 确保使用正确的预加载脚本路径
       nodeIntegration: false,
       contextIsolation: true,
     },
     // 窗口图标
-    // icon: path.join(__dirname, '../public/icon.png'),
+    icon: path.join(__dirname, '../public/logo.ico'),
   })
 
   // 加载应用的 index.html

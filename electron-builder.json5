@@ -3,7 +3,8 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.chushouguai.texteditor",
   "asar": true,
-  "productName": "文本编辑器",
+  "productName": "大触",
+  "icon": "public/logo",
   "directories": {
     "output": "release/${version}"
   },
@@ -15,6 +16,7 @@
     "target": [
       "dmg"
     ],
+    "icon": "public/logo.png",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
   },
   "win": {
@@ -26,6 +28,7 @@
         ]
       }
     ],
+    "icon": "public/logo.ico",
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {
@@ -38,6 +41,7 @@
     "target": [
       "AppImage"
     ],
+    "icon": "public/logo.png",
     "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }
