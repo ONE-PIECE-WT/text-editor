@@ -47,8 +47,8 @@ body, html, #root {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background-color: #1e1e1e;
-  color: #e0e0e0;
+  background-color: var(--app-bg-color);
+  color: var(--app-text-color);
   position: relative;
 }
 
@@ -56,7 +56,7 @@ body, html, #root {
 .sidebar {
   width: 48px;
   height: 100%;
-  background-color: #333333;
+  background-color: var(--sidebar-bg-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -80,16 +80,16 @@ body, html, #root {
   border-radius: 4px;
   margin-bottom: 8px;
   cursor: pointer;
-  color: #e0e0e0;
+  color: var(--sidebar-icon-color);
   font-size: 18px;
 }
 
 .sidebar-icon:hover {
-  background-color: #444444;
+  background-color: var(--sidebar-icon-hover-bg);
 }
 
 .sidebar-icon.active {
-  background-color: #505050;
+  background-color: var(--sidebar-icon-active-bg);
 }
 
 /* CSS变量定义面板宽度 */
@@ -112,11 +112,21 @@ body, html, #root {
   --dialog-border-color-hover: #718096;
   --dialog-hover-bg: #4a5568;
   --dialog-primary-color: #63b3ed;
+  
+  /* 应用主界面变量 */
+  --app-bg-color: #1e1e1e;
+  --app-text-color: #e0e0e0;
+  --sidebar-bg-color: #333333;
+  --sidebar-icon-color: #e0e0e0;
+  --sidebar-icon-hover-bg: #444444;
+  --sidebar-icon-active-bg: #505050;
+  --panel-bg-color: #252526;
+  --panel-border-color: #3c3c3c;
 }
 
 /* 浅色主题变量覆盖 */
 [data-theme="light"] {
-  --dialog-bg-color: #000000;
+  --dialog-bg-color: #ffffff;
   --dialog-bg-color-secondary: #f7fafc;
   --dialog-header-bg: #f7fafc;
   --dialog-text-color: #2d3748;
@@ -125,6 +135,16 @@ body, html, #root {
   --dialog-border-color-hover: #cbd5e0;
   --dialog-hover-bg: #f7fafc;
   --dialog-primary-color: #3182ce;
+  
+  /* 应用主界面浅色主题 */
+  --app-bg-color: #ffffff;
+  --app-text-color: #2d3748;
+  --sidebar-bg-color: #f8f9fa;
+  --sidebar-icon-color: #4a5568;
+  --sidebar-icon-hover-bg: #e2e8f0;
+  --sidebar-icon-active-bg: #cbd5e0;
+  --panel-bg-color: #ffffff;
+  --panel-border-color: #e2e8f0;
 }
 
 /* 深色主题变量覆盖（可选，因为默认就是深色） */
@@ -138,13 +158,23 @@ body, html, #root {
   --dialog-border-color-hover: #718096;
   --dialog-hover-bg: #4a5568;
   --dialog-primary-color: #63b3ed;
+  
+  /* 应用主界面深色主题 */
+  --app-bg-color: #1e1e1e;
+  --app-text-color: #e0e0e0;
+  --sidebar-bg-color: #333333;
+  --sidebar-icon-color: #e0e0e0;
+  --sidebar-icon-hover-bg: #444444;
+  --sidebar-icon-active-bg: #505050;
+  --panel-bg-color: #252526;
+  --panel-border-color: #3c3c3c;
 }
 
 /* 面板通用样式 */
 .left-panel, .right-panel {
   height: 100%;
-  background-color: #252526;
-  border-right: 1px solid #3c3c3c;
+  background-color: var(--panel-bg-color);
+  border-right: 1px solid var(--panel-border-color);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -158,7 +188,7 @@ body, html, #root {
 .right-panel {
   width: var(--right-panel-width);
   border-right: none;
-  border-left: 1px solid #3c3c3c;
+  border-left: 1px solid var(--panel-border-color);
   margin-left: 0;
   margin-right: 48px;
 }
@@ -169,19 +199,20 @@ body, html, #root {
   height: 100%;
   position: absolute;
   top: 0;
-  background-color: rgba(60, 60, 60, 0.5);
+  background-color: var(--panel-border-color);
   cursor: col-resize;
   z-index: 100;
   user-select: none;
   transition: background-color 0.2s ease;
+  opacity: 0.5;
 }
 
 .panel-resizer:hover {
-  background-color: rgba(100, 100, 100, 0.7);
+  opacity: 0.7;
 }
 
 .panel-resizer:active {
-  background-color: rgba(120, 120, 120, 0.9);
+  opacity: 0.9;
 }
 
 /* 防止拖拽时选中文本 */
@@ -212,22 +243,27 @@ body, html, #root {
   align-items: center;
   justify-content: space-between;
   padding: 0 10px;
-  background-color: #333333;
-  border-bottom: 1px solid #3c3c3c;
+  background-color: var(--sidebar-bg-color);
+  border-bottom: 1px solid var(--panel-border-color);
   user-select: none;
 }
 
 .panel-header h3 {
   font-size: 14px;
   font-weight: 500;
+  color: var(--app-text-color);
 }
 
 .panel-header button {
   background: none;
   border: none;
-  color: #e0e0e0;
+  color: var(--sidebar-icon-color);
   cursor: pointer;
   font-size: 12px;
+}
+
+.panel-header button:hover {
+  color: var(--app-text-color);
 }
 
 .panel-content {
@@ -268,7 +304,7 @@ body, html, #root {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #1e1e1e;
+  background-color: var(--app-bg-color);
   min-width: 200px;
   overflow: hidden;
 }
@@ -278,8 +314,8 @@ body, html, #root {
   display: flex;
   align-items: center;
   padding: 0;
-  background-color: #2d2d2d;
-  border-bottom: 1px solid #3c3c3c;
+  background-color: var(--panel-bg-color);
+  border-bottom: 1px solid var(--panel-border-color);
   font-size: 13px;
   user-select: none;
 }
@@ -308,8 +344,8 @@ body, html, #root {
   align-items: center;
   height: 100%;
   padding: 0 12px;
-  background-color: #2d2d2d;
-  border-right: 1px solid #3c3c3c;
+  background-color: var(--panel-bg-color);
+  border-right: 1px solid var(--panel-border-color);
   cursor: pointer;
   white-space: nowrap;
   min-width: 120px;
@@ -318,12 +354,12 @@ body, html, #root {
 }
 
 .tab:hover {
-  background-color: #37373d;
+  background-color: var(--sidebar-icon-hover-bg);
 }
 
 .tab.active {
-  background-color: #1e1e1e;
-  border-bottom: 2px solid #007acc;
+  background-color: var(--app-bg-color);
+  border-bottom: 2px solid var(--dialog-primary-color);
 }
 
 .tab-name {
@@ -332,12 +368,13 @@ body, html, #root {
   text-overflow: ellipsis;
   margin-right: 8px;
   font-size: 13px;
+  color: var(--app-text-color);
 }
 
 .tab-close {
   background: none;
   border: none;
-  color: #a0a0a0;
+  color: var(--dialog-text-color-secondary);
   cursor: pointer;
   font-size: 16px;
   width: 16px;
@@ -351,8 +388,8 @@ body, html, #root {
 }
 
 .tab-close:hover {
-  background-color: #5a5a5a;
-  color: #ffffff;
+  background-color: var(--sidebar-icon-hover-bg);
+  color: var(--app-text-color);
 }
 
 .editor-container {
@@ -370,7 +407,7 @@ body, html, #root {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #6e6e6e;
+  color: var(--dialog-text-color-secondary);
   font-size: 16px;
 }
 
@@ -394,14 +431,15 @@ body, html, #root {
   cursor: pointer;
   font-size: 13px;
   user-select: none;
+  color: var(--app-text-color);
 }
 
 .file-tree-item-content:hover {
-  background-color: #2a2d2e;
+  background-color: var(--dialog-hover-bg);
 }
 
 .file-tree-item-content.selected {
-  background-color: #37373d;
+  background-color: var(--sidebar-icon-hover-bg);
 }
 
 .file-tree-item .icon, 
@@ -438,7 +476,7 @@ body, html, #root {
 .extension-item {
   padding: 10px;
   margin-bottom: 10px;
-  background-color: #2d2d2d;
+  background-color: var(--dialog-bg-color-secondary);
   border-radius: 4px;
   user-select: none;
 }
@@ -446,10 +484,10 @@ body, html, #root {
 .extension-item h4 {
   font-size: 14px;
   margin-bottom: 5px;
-  color: #cccccc;
+  color: var(--app-text-color);
 }
 
 .extension-item p {
   font-size: 12px;
-  color: #a0a0a0;
+  color: var(--dialog-text-color-secondary);
 }

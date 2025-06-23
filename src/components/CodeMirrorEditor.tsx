@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { EditorView, basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -9,6 +9,7 @@ import { html } from '@codemirror/lang-html';
 import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
 import { csg } from './CSGLanguage';
+import { useStateSync } from '../services/stateSync';
 
 // 自定义补全样式主题
 const completionTheme = EditorView.theme({
@@ -152,6 +153,39 @@ const CodeMirrorEditor: React.FC<CodeMirrorEditorProps> = ({
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const stateSync = useStateSync();
+  
+  // 获取当前主题设置
+  const getThemeExtensions = (theme: string) => {
+    return theme === 'dark' ? [oneDark] : [];
+  };
+
+  // 直接从persistStore获取主题设置
+  const [currentTheme, setCurrentTheme] = React.useState(() => {
+    const settings = stateSync.getEditorSettings();
+    return settings?.theme || 'light';
+  });
+
+  // 使用useEffect监听document的data-theme属性变化
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          const newTheme = document.documentElement.getAttribute('data-theme') || 'light';
+          if (newTheme !== currentTheme) {
+            setCurrentTheme(newTheme);
+          }
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    return () => observer.disconnect();
+  }, [currentTheme]);
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -161,7 +195,7 @@ const CodeMirrorEditor: React.FC<CodeMirrorEditorProps> = ({
       doc: value,
       extensions: [
         basicSetup,
-        oneDark, // 暗色主题
+        ...getThemeExtensions(currentTheme), // 动态主题
         completionTheme, // 自定义补全样式
         getLanguageSupport(language),
         createFilePathCompletion(onFilePathComplete),
@@ -206,7 +240,7 @@ const CodeMirrorEditor: React.FC<CodeMirrorEditorProps> = ({
     return () => {
       view.destroy();
     };
-  }, [language, onFilePathComplete]);
+  }, [language, onFilePathComplete, currentTheme]);
 
   // 当value从外部改变时更新编辑器内容
   useEffect(() => {

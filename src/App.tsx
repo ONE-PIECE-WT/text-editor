@@ -36,6 +36,29 @@ function App() {
   // 窗口状态管理
   const { restoreWindowState } = useWindowState();
   
+  // 应用主题到document
+  useEffect(() => {
+    const settings = stateSync.getEditorSettings();
+    const theme = settings?.theme || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+  }, []);
+  
+  // 监听主题设置变化
+  useEffect(() => {
+    const handleSettingsChange = () => {
+      const settings = stateSync.getEditorSettings();
+      const theme = settings?.theme || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    };
+    
+    // 监听设置变化事件（如果有的话）
+    // 这里可以添加事件监听器，或者通过其他方式监听设置变化
+    
+    return () => {
+      // 清理事件监听器
+    };
+  }, [stateSync]);
+  
   // 根据文件扩展名获取语言类型
   const getFileLanguage = (fileName: string): string => {
     const ext = fileName.split('.').pop()?.toLowerCase();

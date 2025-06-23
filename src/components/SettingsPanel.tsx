@@ -17,6 +17,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     stateSync.updateEditorSettings({ [key]: value });
+    
+    // 如果是主题设置，立即应用到document
+    if (key === 'theme') {
+      document.documentElement.setAttribute('data-theme', value);
+    }
   };
 
   // 导出设置
@@ -73,7 +78,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
   // 重置所有设置
   const resetSettings = () => {
     if (confirm('确定要重置所有设置吗？这将清除所有保存的状态。')) {
-      stateSync.resetAllState();
+      stateSync.resetState();
       setSettings({});
       alert('设置已重置');
     }
@@ -108,13 +113,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
             </div>
             
             <div className="setting-item">
-              <label>主题</label>
+              <label>编辑器主题</label>
               <select
                 value={settings.theme || 'light'}
                 onChange={(e) => updateSetting('theme', e.target.value)}
               >
-                <option value="light">浅色</option>
-                <option value="dark">深色</option>
+                <option value="light">浅色主题</option>
+                <option value="dark">深色主题</option>
               </select>
             </div>
             
