@@ -49,10 +49,9 @@ function createWindow() {
     mainWindow = null
   })
   
-  // 当窗口加载完成后，自动打开指定文件夹
+  // 窗口加载完成后的处理
   mainWindow.webContents.on('did-finish-load', () => {
-    // 发送选择的文件夹路径给渲染进程
-    mainWindow?.webContents.send('selected-folder', 'D:\\临时备用文件')
+    // 不再自动发送默认文件夹路径，让应用使用持久化存储的路径
   })
 }
 

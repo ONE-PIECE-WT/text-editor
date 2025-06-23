@@ -152,7 +152,6 @@ function createWindow() {
     mainWindow = null;
   });
   mainWindow.webContents.on("did-finish-load", () => {
-    mainWindow == null ? void 0 : mainWindow.webContents.send("selected-folder", "D:\\临时备用文件");
   });
 }
 ipcMain.handle("get-files", async (_, dirPath) => {
