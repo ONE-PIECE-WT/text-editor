@@ -125,7 +125,7 @@ const customStorage = {
 // 创建持久化状态管理
 export const usePersistStore = create<PersistState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...defaultState,
       
       // 更新布局状态

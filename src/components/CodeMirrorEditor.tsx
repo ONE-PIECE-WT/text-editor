@@ -101,9 +101,7 @@ const createFilePathCompletion = (onFilePathComplete?: (path: string) => Promise
                 boost: 99     // 提升权重
               };
             }),
-            validFor: (text, from, to, state) => {
-              // 获取当前输入的文本
-              const currentInput = text.slice(from, to);
+            validFor: () => {
               // 只有当输入长度变化时才重新触发补全
               return false; // 强制每次输入都重新获取补全
             },

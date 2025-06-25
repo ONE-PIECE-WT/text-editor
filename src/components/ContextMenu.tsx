@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaFile, FaFolder, FaFolderOpen, FaCut, FaCopy, FaEdit, FaTrash, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaFile, FaFolder, FaCut, FaCopy, FaEdit, FaTrash, FaExternalLinkAlt } from 'react-icons/fa';
 import type { FileNode } from '../store/editorStore';
 import './ContextMenu.css';
 

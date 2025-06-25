@@ -5,7 +5,7 @@ import { StreamLanguage } from '@codemirror/language';
 const csgLanguage = StreamLanguage.define({
   name: 'csg',
   startState: () => ({ inImage: false, inBold: false, inItalic: false }),
-  token: (stream, state) => {
+  token: (stream) => {
     // 处理图片语法 ![alt](path)
     if (stream.match(/!\[([^\]]*)\]\(([^\)]*)\)/)) {
       return 'link';

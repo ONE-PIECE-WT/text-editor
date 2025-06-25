@@ -25,10 +25,10 @@ export const useWindowState = () => {
     };
 
     // 监听窗口移动（如果需要保存位置）
-    const handleMove = () => {
-      // 这个功能需要Electron主进程支持
-      // 可以通过IPC获取窗口位置
-    };
+    // const handleMove = () => {
+    //   // 这个功能需要Electron主进程支持
+    //   // 可以通过IPC获取窗口位置
+    // };
 
     // 添加事件监听器
     window.addEventListener('resize', handleResize);

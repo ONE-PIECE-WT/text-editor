@@ -21,7 +21,6 @@ function App() {
     activeTabIndex,
     leftPanelCollapsed, 
     rightPanelCollapsed,
-    setSelectedFile,
     openFile,
     closeTab,
     setActiveTab,
@@ -34,7 +33,7 @@ function App() {
   const stateSync = useStateSync();
   
   // 窗口状态管理
-  const { restoreWindowState } = useWindowState();
+  useWindowState();
   
   // 应用主题到document和原生主题
   useEffect(() => {
@@ -50,12 +49,6 @@ function App() {
   
   // 监听主题设置变化
   useEffect(() => {
-    const handleSettingsChange = () => {
-      const settings = stateSync.getEditorSettings();
-      const theme = settings?.theme || 'light';
-      document.documentElement.setAttribute('data-theme', theme);
-    };
-    
     // 监听设置变化事件（如果有的话）
     // 这里可以添加事件监听器，或者通过其他方式监听设置变化
     
@@ -932,9 +925,9 @@ function App() {
                 <CodeMirrorEditor
                   value={selectedFile?.content || ''}
                   language={selectedFile ? getFileLanguage(selectedFile.name) : 'javascript'}
-                  onChange={(value) => {
+                  onChange={(_value) => {
                     // 可以在这里添加文件内容变更处理
-                    // console.log('文件内容已变更:', value);
+                    // console.log('文件内容已变更:', _value);
                   }}
                   onFilePathComplete={handleFilePathComplete}
                 />

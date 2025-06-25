@@ -1,5 +1,5 @@
 interface ElectronAPI {
-  getFiles: (dirPath: string) => Promise<string[]>
+  getFiles: (dirPath: string) => Promise<{name: string; isDirectory: boolean; path: string}[]>
   getFileContent: (filePath: string) => Promise<string>
   onOpenFolder: (callback: (folderPath: string) => void) => void
   openFolderDialog: () => Promise<string | null>
