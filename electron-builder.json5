@@ -6,7 +6,7 @@
   "productName": "大触",
   "icon": "public/logo",
   "directories": {
-    "output": "release/${version}"
+    "output": "release"
   },
   "files": [
     "dist",

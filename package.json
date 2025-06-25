@@ -3,7 +3,10 @@
   "private": true,
   "version": "0.3.1",
   "description": "A modern text editor with CSG language support",
-  "author": "Your Name",
+  "author": {
+    "name": "Guang Yin",
+    "email": "2136389542@qq.com"
+  },
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
