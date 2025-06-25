@@ -36,11 +36,16 @@ function App() {
   // 窗口状态管理
   const { restoreWindowState } = useWindowState();
   
-  // 应用主题到document
+  // 应用主题到document和原生主题
   useEffect(() => {
     const settings = stateSync.getEditorSettings();
     const theme = settings?.theme || 'light';
     document.documentElement.setAttribute('data-theme', theme);
+    
+    // 同步设置原生主题
+    if (window.electronAPI?.setNativeTheme) {
+      window.electronAPI.setNativeTheme(theme);
+    }
   }, []);
   
   // 监听主题设置变化

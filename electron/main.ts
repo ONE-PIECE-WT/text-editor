@@ -205,9 +205,6 @@ ipcMain.handle('show-in-explorer', async (_, filePath) => {
 
 // 当Electron完成初始化并准备创建浏览器窗口时调用此方法
 app.whenReady().then(() => {
-  // 设置原生主题为深色
-  nativeTheme.themeSource = 'dark'
-  
   // 配置自动更新
   autoUpdater.checkForUpdatesAndNotify()
   

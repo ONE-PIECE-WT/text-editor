@@ -15032,7 +15032,6 @@ ipcMain.handle("show-in-explorer", async (_, filePath) => {
   }
 });
 app.whenReady().then(() => {
-  nativeTheme.themeSource = "dark";
   mainExports.autoUpdater.checkForUpdatesAndNotify();
   mainExports.autoUpdater.on("checking-for-update", () => {
     console.log("Checking for update...");
