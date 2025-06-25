@@ -183,6 +183,102 @@
   background: #c82333;
 }
 
+.action-btn.update {
+  background: #17a2b8;
+  color: white;
+}
+
+.action-btn.update:hover {
+  background: #138496;
+}
+
+.action-btn.update:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.action-btn.update:disabled:hover {
+  background: #6c757d;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.version-info {
+  background: var(--dialog-bg-color-secondary);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--dialog-text-color-secondary);
+  border: 1px solid var(--dialog-border-color);
+  flex: 1;
+}
+
+.update-available {
+  background: #d4edda;
+  color: #155724;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #c3e6cb;
+  margin-top: 10px;
+}
+
+.update-available p {
+  margin: 0;
+  margin-bottom: 5px;
+}
+
+.update-available p:last-child {
+  margin-bottom: 0;
+}
+
+.update-error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #f5c6cb;
+  margin-top: 10px;
+}
+
+.update-error p {
+  margin: 0;
+}
+
+.update-info {
+  background: var(--dialog-bg-color-secondary);
+  color: var(--dialog-text-color-secondary);
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--dialog-border-color);
+  margin-top: 10px;
+}
+
+.update-info p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* 深色主题下的更新状态样式 */
+[data-theme="dark"] .update-available {
+  background: #1e4d2b;
+  color: #a3d9a5;
+  border-color: #2d5a3d;
+}
+
+[data-theme="dark"] .update-error {
+  background: #4d1e1e;
+  color: #f5a3a3;
+  border-color: #5a2d2d;
+}
+
 /* 深色主题支持现在通过CSS变量实现，不再需要媒体查询 */
 
 /* 响应式设计 */

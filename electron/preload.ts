@@ -31,5 +31,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 主题切换
   setNativeTheme: (theme) => ipcRenderer.invoke('set-native-theme', theme),
   
+  // 更新相关API
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  
   // 可以在这里添加更多的API
 });

@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, Menu, nativeTheme } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import path from 'path'
 import fs from 'fs'
 import { createMenu } from './menu'
@@ -68,6 +69,21 @@ ipcMain.handle('set-native-theme', async (_, theme) => {
     return { success: false, error: error.message };
   }
 });
+
+// 手动检查更新
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    const result = await autoUpdater.checkForUpdates()
+    return { success: true, updateInfo: result?.updateInfo }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+})
+
+// 获取当前版本
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion()
+})
 
 // 实现文件系统API
 ipcMain.handle('get-files', async (_, dirPath) => {
@@ -191,6 +207,38 @@ ipcMain.handle('show-in-explorer', async (_, filePath) => {
 app.whenReady().then(() => {
   // 设置原生主题为深色
   nativeTheme.themeSource = 'dark'
+  
+  // 配置自动更新
+  autoUpdater.checkForUpdatesAndNotify()
+  
+  // 自动更新事件监听
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for update...')
+  })
+  
+  autoUpdater.on('update-available', (info) => {
+    console.log('Update available.', info)
+  })
+  
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('Update not available.', info)
+  })
+  
+  autoUpdater.on('error', (err) => {
+    console.log('Error in auto-updater. ' + err)
+  })
+  
+  autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = "Download speed: " + progressObj.bytesPerSecond
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%'
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')'
+    console.log(log_message)
+  })
+  
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded', info)
+    autoUpdater.quitAndInstall()
+  })
   
   createWindow()
   

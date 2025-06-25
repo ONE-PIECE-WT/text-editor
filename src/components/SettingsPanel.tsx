@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStateSync } from '../services/stateSync';
-import { FaCog, FaTimes, FaDownload, FaUpload, FaTrash } from 'react-icons/fa';
+import { FaCog, FaTimes, FaDownload, FaUpload, FaTrash, FaSync } from 'react-icons/fa';
 import './SettingsPanel.css';
 
 interface SettingsPanelProps {
@@ -11,6 +11,12 @@ interface SettingsPanelProps {
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
   const stateSync = useStateSync();
   const [settings, setSettings] = useState(() => stateSync.getEditorSettings() || {});
+  const [updateStatus, setUpdateStatus] = useState<{
+    checking: boolean;
+    available: boolean;
+    version?: string;
+    error?: string;
+  }>({ checking: false, available: false });
 
   // 更新设置
   const updateSetting = (key: string, value: any) => {
@@ -87,6 +93,56 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
       alert('设置已重置');
     }
   };
+
+  // 检查更新
+  const checkForUpdates = async () => {
+    if (!window.electronAPI?.checkForUpdates) {
+      setUpdateStatus({ checking: false, available: false, error: '更新功能不可用' });
+      return;
+    }
+
+    setUpdateStatus({ checking: true, available: false });
+    
+    try {
+      const result = await window.electronAPI.checkForUpdates();
+      
+      if (result.success) {
+        if (result.updateInfo) {
+          setUpdateStatus({
+            checking: false,
+            available: true,
+            version: result.updateInfo.version
+          });
+        } else {
+          setUpdateStatus({
+            checking: false,
+            available: false
+          });
+        }
+      } else {
+        setUpdateStatus({
+          checking: false,
+          available: false,
+          error: result.error || '检查更新失败'
+        });
+      }
+    } catch (error) {
+      setUpdateStatus({
+        checking: false,
+        available: false,
+        error: '检查更新时发生错误'
+      });
+    }
+  };
+
+  // 获取当前版本
+  const [currentVersion, setCurrentVersion] = useState<string>('');
+  
+  useEffect(() => {
+    if (window.electronAPI?.getAppVersion) {
+      window.electronAPI.getAppVersion().then(setCurrentVersion);
+    }
+  }, []);
 
   if (!isOpen) return null;
 
@@ -170,6 +226,54 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 {stateSync.getLastWorkspacePath() || '未选择工作区'}
               </div>
             </div>
+          </div>
+          
+          {/* 应用更新 */}
+          <div className="settings-section">
+            <h3>应用更新</h3>
+            
+            <div className="setting-item">
+              <label>当前版本</label>
+              <div className="version-info">
+                {currentVersion || '获取中...'}
+              </div>
+            </div>
+            
+            <div className="setting-actions">
+              <button 
+                className="action-btn update" 
+                onClick={checkForUpdates}
+                disabled={updateStatus.checking}
+              >
+                <FaSync className={updateStatus.checking ? 'spinning' : ''} /> 
+                {updateStatus.checking ? '检查中...' : '检查更新'}
+              </button>
+            </div>
+            
+            {updateStatus.available && (
+              <div className="update-available">
+                <p>发现新版本: {updateStatus.version}</p>
+                <p>应用将自动下载并安装更新</p>
+              </div>
+            )}
+            
+            {updateStatus.error && (
+              <div className="update-error">
+                <p>错误: {updateStatus.error}</p>
+              </div>
+            )}
+            
+            {!updateStatus.checking && !updateStatus.available && !updateStatus.error && updateStatus.version === undefined && (
+              <div className="update-info">
+                <p>点击检查更新按钮来查看是否有新版本</p>
+              </div>
+            )}
+            
+            {!updateStatus.checking && !updateStatus.available && !updateStatus.error && updateStatus.version !== undefined && (
+              <div className="update-info">
+                <p>当前已是最新版本</p>
+              </div>
+            )}
           </div>
           
           {/* 数据管理 */}

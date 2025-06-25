@@ -43,5 +43,10 @@
     ],
     "icon": "public/logo.png",
     "artifactName": "${productName}-Linux-${version}.${ext}"
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "ONE-PIECE-WT",
+    "repo": "text-editor"
   }
 }
