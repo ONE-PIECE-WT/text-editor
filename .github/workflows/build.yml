@@ -45,7 +45,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        build_script_name: build
+        build_script_name: electron:build
         max_attempts: 3
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
