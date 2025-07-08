@@ -7,6 +7,7 @@ interface ElectronAPI {
   createFile: (filePath: string, content: string) => Promise<void>
   createFolder: (folderPath: string) => Promise<void>
   deleteFile: (filePath: string) => Promise<void>
+  deleteFolder: (folderPath: string) => Promise<void>
   showInExplorer: (filePath: string) => Promise<void>
   setNativeTheme: (theme: 'system' | 'light' | 'dark') => Promise<boolean>
   checkForUpdates: () => Promise<{ success: boolean; updateInfo?: any; error?: string }>

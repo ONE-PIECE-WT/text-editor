@@ -145,22 +145,53 @@ export const useEditorStore = create<EditorState>((set) => ({
   toggleRightPanel: () => set((state) => ({ rightPanelCollapsed: !state.rightPanelCollapsed })),
   
   // 切换文件夹展开/折叠状态
-  toggleFolder: (targetNode) => set((state) => {
+  toggleFolder: async (targetNode) => {
     // 递归函数，用于在文件树中查找并更新目标节点
-    const updateNode = (nodes: FileNode[]): FileNode[] => {
-      return nodes.map(node => {
+    const updateNode = async (nodes: FileNode[]): Promise<FileNode[]> => {
+      const updatedNodes: FileNode[] = [];
+      
+      for (const node of nodes) {
         if (node.id === targetNode.id) {
-          return { ...node, expanded: !node.expanded };
+          const newExpanded = !node.expanded;
+          let updatedNode = { ...node, expanded: newExpanded };
+          
+          // 如果是展开文件夹且没有子内容，则加载子内容
+          if (newExpanded && node.type === 'folder' && node.path && (!node.children || node.children.length === 0)) {
+            try {
+              console.log(`加载文件夹内容: ${node.path}`);
+              const files = await window.electronAPI.getFiles(node.path);
+              const children = files.map((file) => ({
+                id: file.path,
+                name: file.name,
+                type: file.isDirectory ? 'folder' as const : 'file' as const,
+                path: file.path,
+                expanded: false,
+              }));
+              updatedNode.children = children;
+            } catch (error) {
+              console.error(`加载文件夹 ${node.path} 内容失败:`, error);
+              updatedNode.children = node.children || [];
+            }
+          }
+          
+          updatedNodes.push(updatedNode);
+        } else {
+          if (node.children) {
+            const updatedChildren = await updateNode(node.children);
+            updatedNodes.push({ ...node, children: updatedChildren });
+          } else {
+            updatedNodes.push(node);
+          }
         }
-        if (node.children) {
-          return { ...node, children: updateNode(node.children) };
-        }
-        return node;
-      });
+      }
+      
+      return updatedNodes;
     };
     
-    return { fileTree: updateNode(state.fileTree) };
-  }),
+    const currentState = useEditorStore.getState();
+    const updatedFileTree = await updateNode(currentState.fileTree);
+    set({ fileTree: updatedFileTree });
+  },
   
   // 更新文件内容
   updateFileContent: (id, content) => set((state) => {

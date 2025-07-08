@@ -27,6 +27,14 @@ const completionTheme = EditorView.theme({
     color: '#888 !important',   // 路径颜色使用更暗的颜色
     marginLeft: 'auto !important',
     opacity: '0.7 !important'
+  },
+  // 选中状态下的样式
+  '.cm-tooltip-autocomplete ul li[aria-selected="true"] .cm-completionLabel': {
+    color: 'white !important'
+  },
+  '.cm-tooltip-autocomplete ul li[aria-selected="true"] .cm-completionDetail': {
+    color: 'white !important',
+    opacity: '0.9 !important'
   }
 });
 

@@ -10,6 +10,7 @@ class StateSyncService {
   private editorStore: any;
   private persistStore: any;
   private isInitialized = false;
+  private isRestoringState = false;
 
   constructor() {
     // 延迟初始化，确保stores已经创建
@@ -34,8 +35,9 @@ class StateSyncService {
    * 从持久化存储恢复状态
    */
   public async restoreState() {
-    if (!this.isInitialized) return;
+    if (!this.isInitialized || this.isRestoringState) return;
     
+    this.isRestoringState = true;
     const persistedState = this.persistStore;
     const editorState = this.editorStore;
     
@@ -67,6 +69,8 @@ class StateSyncService {
     
     // 恢复文件夹展开状态
     await this.restoreExpandedFolders(persistedState.expandedFolders);
+    
+    this.isRestoringState = false;
   }
 
   /**
@@ -169,6 +173,12 @@ class StateSyncService {
    * 同步文件夹展开状态
    */
   private syncExpandedFolders(fileTree: FileNode[]) {
+    // 如果正在恢复状态，跳过同步以防止循环
+    if (this.isRestoringState) {
+      console.log('正在恢复状态，跳过展开状态同步');
+      return;
+    }
+    
     const expandedIds: string[] = [];
     
     const collectExpandedIds = (nodes: FileNode[]) => {
