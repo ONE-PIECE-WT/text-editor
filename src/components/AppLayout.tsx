@@ -2,6 +2,8 @@ import React from 'react';
 import LeftSidebar from './LeftSidebar';
 import LeftPanel from './LeftPanel';
 import CenterPanel from './CenterPanel';
+import RightPanel from './RightPanel';
+import RightSidebar from './RightSidebar';
 import { UIDialogs } from './UIDialogs';
 import type { FileNode } from '../store/editorStore';
 
@@ -43,6 +45,7 @@ interface AppLayoutProps {
   onNodeClick: (node: FileNode) => void;
   onContextMenu: (e: React.MouseEvent, node: FileNode) => void;
   onStartLeftResize: (e: React.MouseEvent) => void;
+  onStartRightResize: (e: React.MouseEvent) => void;
   onEditorChange: (value: string) => void;
   onFilePathComplete: (partialPath: string) => Promise<string[]>;
   
@@ -70,6 +73,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   openTabs,
   activeTabIndex,
   leftPanelCollapsed,
+  rightPanelCollapsed,
   isResizing,
   isSettingsOpen,
   contextMenu,
@@ -78,6 +82,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   
   // 事件处理函数
   onToggleLeftPanel,
+  onToggleRightPanel,
   onOpenSettings,
   onCloseSettings,
   onTabClick,
@@ -85,6 +90,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   onNodeClick,
   onContextMenu,
   onStartLeftResize,
+  onStartRightResize,
   onEditorChange,
   onFilePathComplete,
   
@@ -133,6 +139,19 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         onTabClose={onTabClose}
         onEditorChange={onEditorChange}
         onFilePathComplete={onFilePathComplete}
+      />
+
+      {/* 右侧面板 - 扩展功能 */}
+      <RightPanel
+        rightPanelCollapsed={rightPanelCollapsed}
+        onStartResize={onStartRightResize}
+      />
+      
+      {/* 右侧工具栏 */}
+      <RightSidebar
+        rightPanelCollapsed={rightPanelCollapsed}
+        onToggleRightPanel={onToggleRightPanel}
+        onOpenSettings={onOpenSettings}
       />
 
       {/* UI弹窗组件 */}

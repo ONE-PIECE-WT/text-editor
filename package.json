@@ -1,7 +1,7 @@
 {
   "name": "dachu-text-editor",
   "private": true,
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "A modern text editor with CSG language support",
   "author": {
     "name": "Guang Yin",

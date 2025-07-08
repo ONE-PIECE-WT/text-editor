@@ -80,7 +80,7 @@ function App() {
   }, [stateSync]);
   
   // 使用面板调整大小Hook
-  const { isLeftResizing, isRightResizing, startLeftResize } = usePanelResize();
+  const { isLeftResizing, isRightResizing, startLeftResize, startRightResize } = usePanelResize();
 
   // 设置面板状态
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -125,6 +125,7 @@ function App() {
       onNodeClick={handleNodeClick}
       onContextMenu={handleContextMenu}
       onStartLeftResize={startLeftResize}
+      onStartRightResize={startRightResize}
       onEditorChange={handleEditorChange}
       onFilePathComplete={handleFilePathCompleteWrapper}
       
